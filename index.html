@@ -1,72 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pi Cloud</title>
+<title>Silvan's Cloud</title>
 <style>
-body { font-family:sans-serif; background:#0f172a; color:white }
-.card { background:#111827; padding:20px; border-radius:12px; margin:10px }
-button { padding:10px; border-radius:8px }
-.online { color:#22c55e }
-.offline { color:#ef4444 }
+body{margin:0;font-family:sans-serif;background:#0f172a;color:white}
+.sidebar{width:220px;background:#020617;height:100vh;position:fixed}
+.main{margin-left:220px;padding:20px}
+.item{padding:10px;border-radius:6px}
+.item:hover{background:#1e293b;cursor:pointer}
 </style>
 </head>
 
 <body>
-<h1>Silvan's Cloud</h1>
-
-<div class="card">
-  <p id="status">Status...</p>
+<div class="sidebar">
+  <h3>Silvan's Cloud</h3>
+  <div id="status"></div>
 </div>
 
-<div class="card">
-  <input type="file" id="file">
-  <button onclick="upload()">Upload</button>
-</div>
-
-<div class="card" id="admin" style="display:none">
-  <h3>Admin Logs</h3>
-  <pre id="logs"></pre>
+<div class="main">
+  <h2>Dateien</h2>
+  <div id="files"></div>
 </div>
 
 <script>
-const API = "https://dein-projekt.vercel.app/api";
-let role = "user";
+const API = "https://backend-server-vercel-eight.vercel.app/api";
+let token = localStorage.token;
 
-async function login() {
-  const r = await fetch(API+"/auth", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ user:"admin", pass:"admin123" })
+async function load() {
+  const r = await fetch(API+"/list", {
+    headers:{ Authorization:"Bearer "+token }
   });
-  const j = await r.json();
-  role = j.role;
-  if (role==="admin") document.getElementById("admin").style.display="block";
+  const data = await r.json();
+  const div = document.getElementById("files");
+  div.innerHTML="";
+  Object.entries(data).forEach(([dir,files])=>{
+    div.innerHTML+=`<h4>${dir||"/"}</h4>`;
+    files.forEach(f=>{
+      div.innerHTML+=
+        `<div class=item onclick="download('${dir}/${f}')">📄 ${f}</div>`;
+    });
+  });
 }
 
-async function status() {
-  const r = await fetch(API+"/status");
-  const j = await r.json();
-  document.getElementById("status").innerHTML =
-    "Pi: <b class='"+j.pi+"'>"+j.pi+"</b>";
+function download(p){
+  window.open(API+"/download?path="+encodeURIComponent(p));
 }
 
-async function upload() {
-  const f = document.getElementById("file").files[0];
-  const d = new FormData();
-  d.append("file", f);
-  const r = await fetch(API+"/upload",{method:"POST",body:d});
-  alert(r.ok ? "Uploaded" : "Queued");
-}
-
-async function logs() {
-  const r = await fetch(API+"/admin");
-  document.getElementById("logs").innerText = await r.text();
-}
-
-login();
-status();
-setInterval(status, 5000);
-setInterval(logs, 5000);
+load();
 </script>
 </body>
 </html>
