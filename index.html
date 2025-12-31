@@ -1,52 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Silvan's Cloud</title>
-<style>
-body{margin:0;font-family:sans-serif;background:#0f172a;color:white}
-.sidebar{width:220px;background:#020617;height:100vh;position:fixed}
-.main{margin-left:220px;padding:20px}
-.item{padding:10px;border-radius:6px}
-.item:hover{background:#1e293b;cursor:pointer}
-</style>
+  <meta charset="UTF-8">
+  <title>Silvan's Cloud</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
-
 <body>
-<div class="sidebar">
-  <h3>Silvan's Cloud</h3>
-  <div id="status"></div>
-</div>
+<h1>Silvan's Cloud</h1>
 
-<div class="main">
-  <h2>Dateien</h2>
-  <div id="files"></div>
-</div>
+<button id="loginBtn">Login</button>
+<input type="file" id="fileInput">
+<button onclick="upload()">Upload</button>
 
-<script>
-const API = "https://backend-server-vercel-eight.vercel.app/api";
-let token = localStorage.token;
+<h2>Dateien</h2>
+<ul id="fileList"></ul>
 
-async function load() {
-  const r = await fetch(API+"/list", {
-    headers:{ Authorization:"Bearer "+token }
-  });
-  const data = await r.json();
-  const div = document.getElementById("files");
-  div.innerHTML="";
-  Object.entries(data).forEach(([dir,files])=>{
-    div.innerHTML+=`<h4>${dir||"/"}</h4>`;
-    files.forEach(f=>{
-      div.innerHTML+=
-        `<div class=item onclick="download('${dir}/${f}')">📄 ${f}</div>`;
-    });
-  });
-}
-
-function download(p){
-  window.open(API+"/download?path="+encodeURIComponent(p));
-}
-
-load();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
