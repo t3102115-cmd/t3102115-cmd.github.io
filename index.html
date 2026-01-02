@@ -1,21 +1,116 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>My Cloud Explorer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Silvan's Website</title>
+  <style>
+    /* Grundlayout */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+      color: #2c3e50;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    p {
+      font-size: 1.2em;
+      margin-bottom: 40px;
+      color: #555;
+    }
+
+    /* Menü-Container */
+    #menu {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    /* Karten-Style für jeden Button */
+    #menu li {
+      flex: 1 1 200px;
+      max-width: 220px;
+    }
+
+    #menu a {
+      display: block;
+      text-align: center;
+      padding: 20px;
+      background: #3498db;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.2em;
+      border-radius: 15px;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    #menu a:hover {
+      background: #2980b9;
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+    }
+
+    /* Footer optional */
+    footer {
+      margin-top: 50px;
+      font-size: 0.9em;
+      color: #888;
+    }
+
+    @media(max-width: 600px){
+      #menu li { max-width: 100%; }
+    }
+  </style>
 </head>
 <body>
-<h1>☁️ My Private Cloud</h1>
+  <h1>Welcome to Silvan's Website!</h1>
+  <p>Choose a page from the menu:</p>
+  
+  <ul id="menu">
+    <!-- Dynamisches Menü via JavaScript -->
+  </ul>
 
-<p>Status: <span id="status">unbekannt</span></p>
+  <footer>
+    &copy; © 2026 Silvan
+  </footer>
 
-<input type="file" id="fileInput">
-<button onclick="upload()">Upload</button>
+  <script>
+    // Hier definierst du die Unterseiten (Ordnernamen)
+    const unterseiten = [
+      { name: "Cloud", folder: "cloud/" },
+      { name: "FREE ROBUX", folder: "rickroll/" },
+      { name: "FREE VBUCKS", folder: "rickroll/" },
+      { name: "FREE MONEY", folder: "rickroll/" },
+    ];
 
-<h2>Dateien</h2>
-<ul id="fileList"></ul>
+    const menu = document.getElementById("menu");
 
-<script src="app.js"></script>
+    unterseiten.forEach(seite => {
+      const li = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = seite.folder; // Link zum Unterordner
+      link.textContent = seite.name;
+      li.appendChild(link);
+      menu.appendChild(li);
+    });
+  </script>
 </body>
 </html>
