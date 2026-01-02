@@ -1,21 +1,130 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>My Cloud Explorer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <title>Silvan's Cloud</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(14px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 2.2em;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    #status {
+      margin-bottom: 20px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    #files {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 15px;
+      padding: 20px;
+      min-height: 200px;
+      margin-bottom: 25px;
+      overflow-y: auto;
+    }
+
+    #files::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #files::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 10px;
+    }
+
+    .upload-box {
+      border: 2px dashed rgba(255,255,255,0.5);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .upload-box:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: #00c6ff;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+      font-size: 1em;
+      color: #fff;
+    }
+
+    input[type="file"]::-webkit-file-upload-button {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    input[type="file"]::-webkit-file-upload-button:hover {
+      opacity: 0.9;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        border-radius: 0;
+        height: 100vh;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<h1>☁️ My Private Cloud</h1>
+  <div class="container">
+    <h2>Silvan's Cloud</h2>
 
-<p>Status: <span id="status">unbekannt</span></p>
+    <div id="status">Connecting to server…</div>
 
-<input type="file" id="fileInput">
-<button onclick="upload()">Upload</button>
+    <div id="files">
+      <!-- Files will be injected here by app.js -->
+    </div>
 
-<h2>Dateien</h2>
-<ul id="fileList"></ul>
+    <div class="upload-box">
+      <strong>Upload a file</strong><br>
+      <input type="file" id="upload">
+    </div>
+  </div>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
+  <script src="preview.js"></script>
 </body>
 </html>
