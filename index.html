@@ -7,7 +7,7 @@
     /* Grundlayout */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
       margin: 0;
       padding: 0;
       display: flex;
@@ -16,19 +16,24 @@
       align-items: center;
       justify-content: center;
       color: #333;
+      overflow-x: hidden;
     }
 
     h1 {
-      font-size: 3em;
+      font-size: 3.5em;
       margin-bottom: 10px;
-      color: #2c3e50;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      color: #1b2a49;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+      animation: fadeInDown 1s ease forwards;
+      opacity: 0;
     }
 
     p {
-      font-size: 1.2em;
-      margin-bottom: 40px;
-      color: #555;
+      font-size: 1.3em;
+      margin-bottom: 50px;
+      color: #2c3e50;
+      animation: fadeInDown 1.2s ease forwards;
+      opacity: 0;
     }
 
     /* Menü-Container */
@@ -36,7 +41,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
+      gap: 25px;
       padding: 0;
       margin: 0;
       list-style: none;
@@ -46,36 +51,61 @@
     #menu li {
       flex: 1 1 200px;
       max-width: 220px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease forwards;
     }
 
     #menu a {
       display: block;
       text-align: center;
-      padding: 20px;
-      background: #3498db;
+      padding: 25px;
+      background: linear-gradient(145deg, #3498db, #5dade2);
       color: #fff;
       text-decoration: none;
       font-weight: bold;
       font-size: 1.2em;
-      border-radius: 15px;
-      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transition: all 0.4s ease;
     }
 
     #menu a:hover {
-      background: #2980b9;
-      transform: translateY(-5px);
-      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+      background: linear-gradient(145deg, #2980b9, #3498db);
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.3);
     }
 
     /* Footer optional */
     footer {
-      margin-top: 50px;
+      margin-top: 60px;
       font-size: 0.9em;
-      color: #888;
+      color: #1b2a49;
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards;
     }
 
+    /* Animations */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staggered animation for menu items */
+    #menu li:nth-child(1) { animation-delay: 1.5s; }
+    #menu li:nth-child(2) { animation-delay: 1.7s; }
+    #menu li:nth-child(3) { animation-delay: 1.9s; }
+    #menu li:nth-child(4) { animation-delay: 2.1s; }
+
+    /* Responsive */
     @media(max-width: 600px){
+      h1 { font-size: 2.5em; }
+      p { font-size: 1.1em; margin-bottom: 30px; }
       #menu li { max-width: 100%; }
     }
   </style>
@@ -89,11 +119,11 @@
   </ul>
 
   <footer>
-    &copy;  2026 Silvan
+    &copy; 2026 Silvan
   </footer>
 
   <script>
-    // Hier definierst du die Unterseiten (Ordnernamen)
+    // Unterseiten definieren
     const unterseiten = [
       { name: "Cloud", folder: "cloud/" },
       { name: "FREE ROBUX", folder: "rickroll/" },
@@ -103,7 +133,7 @@
 
     const menu = document.getElementById("menu");
 
-    unterseiten.forEach(seite => {
+    unterseiten.forEach((seite, index) => {
       const li = document.createElement("li");
       const link = document.createElement("a");
       link.href = seite.folder; // Link zum Unterordner
