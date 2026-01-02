@@ -1,15 +1,73 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>GET RICKROLLED IN 2026</title>
+  <title>FREE STUFF IS WAITING</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+    }
+
+    #text {
+      font-size: 1.5em;
+      margin-bottom: 30px;
+    }
+
+    video {
+      display: none;          /* Erst nach 5 Sekunden sichtbar */
+      width: 80%;
+      max-width: 800px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      pointer-events: none;   /* Benutzer kann nicht stoppen */
+    }
+  </style>
 </head>
 <body>
-  <p>AD:</p>
-  <p>Hello wanna get free money, free robux or free vbucks? click <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">here</a></p>
+  <div id="text">Your FREE stuff is generating</div>
+
+  <video id="video" autoplay loop playsinline>
+    <source src="rickroll.mp4" type="video/mp4">
+    Sorry, your browser doesn't support free stuff!
+  </video>
 
   <script>
-    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const textDiv = document.getElementById('text');
+    const video = document.getElementById('video');
+
+    // Prüfen, ob Browser HTML5-Video unterstützt
+    if (!video.canPlayType) {
+      window.location.href = "https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1";
+    } else {
+      // 5 Sekunden warten
+      setTimeout(() => {
+        // Text ändern
+        textDiv.textContent = "GET RICKROLLED IN 2026!!!!!!!!!!!!";
+        <title>GET RICKROLLED IN 2026</title>
+
+        // Video einblenden
+        video.style.display = 'block';
+        video.muted = false; // Ton einschalten
+
+        // Autoplay starten
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Wenn Autoplay mit Ton blockiert wird, zu YouTube weiterleiten
+            window.location.href = "https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1";
+          });
+        }
+
+        // Fehlerbehandlung falls Video nicht geladen werden kann
+        video.addEventListener('error', () => {
+          window.location.href = "https://www.youtube.com/watch?v=xvFZjo5PgG0&list=RDxvFZjo5PgG0&start_radio=1";
+        });
+      }, 5000);
+    }
   </script>
 </body>
 </html>
