@@ -100,7 +100,7 @@ button:hover {
 <script>
 // ==== Plugin JSON-Datei laden ====
 async function loadPlugins() {
-  const res = await fetch("                                    /plugins.json");
+  const res = await fetch("/plugins.json");
   const plugins = await res.json();
   const container = document.getElementById("plugins");
   container.innerHTML = ""; // leeren, bevor wir rendern
@@ -119,7 +119,7 @@ async function loadPlugins() {
         ${options}
       </select>
 
-      <button onclick="downloadPlugin('${p.id}')">⬇ Download</button>
+      <button onclick="downloadPlugin('${p.id}')">Download</button>
 
       <div class="readme" id="r-${p.id}">Loading README…</div>
     `;
@@ -134,7 +134,7 @@ async function loadPlugins() {
 // README-Datei anzeigen, falls vorhanden
 async function loadReadme(id) {
   try {
-    const res = await fetch(`plugins/${id}/README.md`);
+    const res = await fetch(`/${id}/README.md`);
     if (!res.ok) throw new Error("No README");
     const text = await res.text();
     document.getElementById("r-" + id).textContent = text;
