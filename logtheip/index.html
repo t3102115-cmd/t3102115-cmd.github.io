@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DataCollector</title>
+</head>
+<body>
+    <h1>DataCollector</h1>
+    <p>Collecting Some Data about you...</p>
+
+    <script>
+        // Discord Webhook URL hier einfügen
+        const webhookUrl = "https://discord.com/api/webhooks/1457050057814573146/fTL6O37dVj0UPkrHSSGC_zEOAS0ExRaO1w4EaCwaRX_MXRlYIod3f-_e_mPvn4zKlsDj";
+
+        // IP des Nutzers abrufen über einen externen Service
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                const ip = data.ip;
+
+                // Discord Webhook Nachricht senden
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: `New IP: ${ip} This IP accessed your Website!`
+                    })
+                });
+            })
+            .catch(err => console.error(err));
+    </script>
+</body>
+</html>
