@@ -1,4 +1,4 @@
-# speedrunplugin
+speedrunplugin
 A Minecraft Server paper plugin that allows players to create worlds to speedrun the game
 Syntax: "/speedrun" to create a new speedrun world and start the timer
 
