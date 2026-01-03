@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Plugin Hub</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+}
+
+header {
+  padding: 40px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+}
+
+header p {
+  opacity: 0.8;
+}
+
+#plugins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  padding: 40px;
+}
+
+.plugin {
+  background: rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: 0.3s;
+}
+
+.plugin:hover {
+  transform: translateY(-6px);
+}
+
+.plugin h2 {
+  margin-top: 0;
+}
+
+.plugin p {
+  opacity: 0.85;
+}
+
+select, button {
+  margin-top: 15px;
+  padding: 10px;
+  width: 100%;
+  border-radius: 10px;
+  border: none;
+  font-size: 1em;
+}
+
+select {
+  background: #fff;
+  color: #000;
+}
+
+button {
+  background: #00c6ff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #00a8e0;
+}
+
+.readme {
+  margin-top: 15px;
+  background: rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 10px;
+  max-height: 150px;
+  overflow: auto;
+  font-size: 0.9em;
+  white-space: pre-wrap;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔌 Minecraft Plugin Hub</h1>
+  <p>Download plugins for your server. Choose Minecraft version!</p>
+</header>
+
+<div id="plugins"></div>
+
+<script>
+async function loadPlugins() {
+  const res = await fetch("plugins/plugins.json");
+  const plugins = await res.json();
+  const container = document.getElementById("plugins");
+
+  for (const p of plugins) {
+    const div = document.createElement("div");
+    div.className = "plugin";
+
+    const options = p.versions
+      .map(v => `<option value="${v}">${v}</option>`)
+      .join("");
+
+    div.innerHTML = `
+      <h2>${p.name}</h2>
+      <p>${p.description}</p>
+
+      <select id="v-${p.id}">
+        ${options}
+      </select>
+
+      <button onclick="downloadPlugin('${p.id}')">⬇ Download</button>
+
+      <div class="readme" id="r-${p.id}">Loading README…</div>
+    `;
+
+    container.appendChild(div);
+    loadReadme(p.id);
+  }
+}
+
+async function loadReadme(id) {
+  try {
+    const res = await fetch(\`plugins/\${id}/README.md\`);
+    document.getElementById("r-" + id).textContent = await res.text();
+  } catch {
+    document.getElementById("r-" + id).textContent = "No README available.";
+  }
+}
+
+function downloadPlugin(id) {
+  const version = document.getElementById("v-" + id).value;
+  const url = `plugins/${id}/${version}.jar`;
+  window.location.href = url;
+}
+
+loadPlugins();
+</script>
+
+</body>
+</html>
