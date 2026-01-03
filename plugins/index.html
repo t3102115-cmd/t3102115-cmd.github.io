@@ -100,7 +100,7 @@ button:hover {
 <script>
 // ==== Plugin JSON-Datei laden ====
 async function loadPlugins() {
-  const res = await fetch("plugins/plugins.json");
+  const res = await fetch("                                    /plugins.json");
   const plugins = await res.json();
   const container = document.getElementById("plugins");
   container.innerHTML = ""; // leeren, bevor wir rendern
@@ -146,7 +146,7 @@ async function loadReadme(id) {
 // Download-Funktion
 function downloadPlugin(id) {
   const fileName = document.getElementById("v-" + id).value;
-  window.location.href = `plugins/${id}/${fileName}`;
+  window.location.href = `/${id}/${fileName}`;
 }
 
 loadPlugins();
