@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>403 – Forbidden</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
+      padding: 50px 60px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      animation: fadeIn 1s ease;
+      max-width: 500px;
+    }
+
+    .code {
+      font-size: 7rem;
+      font-weight: 800;
+      letter-spacing: 5px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow 2s infinite alternate;
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 35px;
+    }
+
+    a.button {
+      display: inline-block;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      box-shadow: 0 0 25px rgba(0, 140, 255, 0.7);
+      transition: 0.3s;
+    }
+
+    a.button:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 45px rgba(0, 180, 255, 1);
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px rgba(0,198,255,0.6);
+      }
+      to {
+        text-shadow: 0 0 30px rgba(0,114,255,1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="code">403</div>
+    <h1>Access Forbidden</h1>
+    <p>
+      You don’t have permission to access this page.<br>
+      Please check the URL or return to the homepage.
+    </p>
+    <a href="https://t3102115-cmd.github.io" class="button">
+      Go Back Home
+    </a>
+  </div>
+
+</body>
+</html>
