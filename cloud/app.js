@@ -1,4 +1,4 @@
-const AUTH = "https://magenta-liger-2daeb1.netlify.app/";
+const AUTH = "https://renderauth-0ujh.onrender.com/";
 let sessionToken = null;
 
 async function handshake() {
