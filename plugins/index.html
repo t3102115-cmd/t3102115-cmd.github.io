@@ -98,40 +98,55 @@ button:hover {
 <div id="plugins">Loading plugins…</div>
 
 <script>
-// ==== Plugin JSON-Datei laden ====
-async function loadPlugins() {
-  const res = await fetch("plugins.json");
-  const plugins = await res.json();
-  const container = document.getElementById("plugins");
-  container.innerHTML = ""; // leeren, bevor wir rendern
+// ==== Statische Plugins JSON direkt im JS (funktioniert ohne fetch Probleme) ====
+const plugins = [
+  {
+    "name": "RestartPlus",
+    "id": "restartplus",
+    "description": "A Paper plugin that allows admins to restart and stop the server with a reason and delay",
+    "files": ["RestartPlus-1.0-1.21.10.jar"]
+  },
+  {
+    "name": "SpeedrunPlugin",
+    "id": "speedrunplugin",
+    "description": "A Minecraft Server paper plugin that allows players to create worlds to speedrun the game",
+    "files": [
+      "Speedrun-Mod-1.0-1.21.10-Release.jar",
+      "Speedrun-Mod-1.1-1.21.10-Added-Linking.jar",
+      "Speedrun-Mod-1.2-1.21.10-Bug-Fixes.jar",
+      "Speedrun-Mod-1.3-1.21.10-More-Bug-Fixes.jar"
+    ]
+  }
+];
 
-  plugins.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "plugin";
+const container = document.getElementById("plugins");
+container.innerHTML = ""; // vorher leeren
 
-    const options = p.files.map(f => `<option value="${f}">${f}</option>`).join("");
+plugins.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "plugin";
 
-    div.innerHTML = `
-      <h2>${p.name}</h2>
-      <p>${p.description}</p>
+  const options = p.files.map(f => `<option value="${f}">${f}</option>`).join("");
 
-      <select id="v-${p.id}">
-        ${options}
-      </select>
+  div.innerHTML = `
+    <h2>${p.name}</h2>
+    <p>${p.description}</p>
 
-      <button onclick="downloadPlugin('${p.id}')">Download</button>
+    <select id="v-${p.id}">
+      ${options}
+    </select>
 
-      <div class="readme" id="r-${p.id}">Loading README…</div>
-    `;
+    <button onclick="downloadPlugin('${p.id}')">⬇ Download</button>
 
-    container.appendChild(div);
+    <div class="readme" id="r-${p.id}">Loading README…</div>
+  `;
 
-    // README laden
-    loadReadme(p.id);
-  });
-}
+  container.appendChild(div);
 
-// README-Datei anzeigen, falls vorhanden
+  // README laden, falls vorhanden
+  loadReadme(p.id);
+});
+
 async function loadReadme(id) {
   try {
     const res = await fetch(`${id}/README.md`);
@@ -143,13 +158,10 @@ async function loadReadme(id) {
   }
 }
 
-// Download-Funktion
 function downloadPlugin(id) {
   const fileName = document.getElementById("v-" + id).value;
   window.location.href = `${id}/${fileName}`;
 }
-
-loadPlugins();
 </script>
 
 </body>
