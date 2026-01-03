@@ -3,12 +3,19 @@
     "name": "RestartPlus",
     "id": "restartplus",
     "description": "A Paper plugin that allows admins to restart and stop the server with a reason and delay",
-    "versions": ["1.21.10"]
+    "files": [
+      "RestartPlus-1.0-1.21.10.jar",
+    ]
   },
   {
     "name": "SpeedrunPlugin",
     "id": "speedrunplugin",
     "description": "A Minecraft Server paper plugin that allows players to create worlds to speedrun the game",
-    "versions": ["1.21.10"]
+    "files": [
+      "Speedrun-Mod-1.0-1.21.10-Release.jar",
+      "Speedrun-Mod-1.1-1.21.10-Added-Linking.jar",
+      "Speedrun-Mod-1.2-1.21.10-Bug-Fixes.jar",
+      "Speedrun-Mod-1.3-1.21.10-More-Bug-Fixes.jar",
+    ]
   }
 ]
