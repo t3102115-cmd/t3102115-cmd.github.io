@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Plugin Hub</title>
+<title>Silvans Plugin Hub</title>
 
 <style>
 body {
@@ -92,8 +92,8 @@ button:hover {
 <body>
 
 <header>
-  <h1>Minecraft Plugin Hub</h1>
-  <p>Download plugins made my Silvan</p>
+  <h1>Silvan's Minecraft Plugin Hub</h1>
+  <p>Download plugins for your server made by Silvan.</p>
 </header>
 
 <div id="plugins"></div>
@@ -108,8 +108,8 @@ async function loadPlugins() {
     const div = document.createElement("div");
     div.className = "plugin";
 
-    const options = p.versions
-      .map(v => `<option value="${v}">${v}</option>`)
+    const options = p.files
+      .map(f => `<option value="${f}">${f}</option>`)
       .join("");
 
     div.innerHTML = `
@@ -120,7 +120,7 @@ async function loadPlugins() {
         ${options}
       </select>
 
-      <button onclick="downloadPlugin('${p.id}')">⬇ Download</button>
+      <button onclick="downloadPlugin('${p.id}')">Download</button>
 
       <div class="readme" id="r-${p.id}">Loading README…</div>
     `;
@@ -132,7 +132,7 @@ async function loadPlugins() {
 
 async function loadReadme(id) {
   try {
-    const res = await fetch(\`plugins/\${id}/README.md\`);
+    const res = await fetch(`plugins/${id}/README.md`);
     document.getElementById("r-" + id).textContent = await res.text();
   } catch {
     document.getElementById("r-" + id).textContent = "No README available.";
@@ -140,9 +140,8 @@ async function loadReadme(id) {
 }
 
 function downloadPlugin(id) {
-  const version = document.getElementById("v-" + id).value;
-  const url = `plugins/${id}/${version}.jar`;
-  window.location.href = url;
+  const fileName = document.getElementById("v-" + id).value;
+  window.location.href = `plugins/${id}/${fileName}`;
 }
 
 loadPlugins();
