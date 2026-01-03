@@ -95,22 +95,22 @@ button:hover {
   <p>Download plugins for your server. Select the version you need.</p>
 </header>
 
-<div id="plugins">Loading plugins…</div>
+<div id="plugins"></div>
 
 <script>
-// ==== Statische Plugins JSON direkt im JS (funktioniert ohne fetch Probleme) ====
+// ==== Plugins direkt im JS definieren ====
 const plugins = [
   {
-    "name": "RestartPlus",
-    "id": "restartplus",
-    "description": "A Paper plugin that allows admins to restart and stop the server with a reason and delay",
-    "files": ["RestartPlus-1.0-1.21.10.jar"]
+    name: "RestartPlus",
+    id: "restartplus",
+    description: "A Paper plugin that allows admins to restart and stop the server with a reason and delay",
+    files: ["RestartPlus-1.0-1.21.10.jar"]
   },
   {
-    "name": "SpeedrunPlugin",
-    "id": "speedrunplugin",
-    "description": "A Minecraft Server paper plugin that allows players to create worlds to speedrun the game",
-    "files": [
+    name: "SpeedrunPlugin",
+    id: "speedrunplugin",
+    description: "A Minecraft Server paper plugin that allows players to create worlds to speedrun the game",
+    files: [
       "Speedrun-Mod-1.0-1.21.10-Release.jar",
       "Speedrun-Mod-1.1-1.21.10-Added-Linking.jar",
       "Speedrun-Mod-1.2-1.21.10-Bug-Fixes.jar",
@@ -120,7 +120,6 @@ const plugins = [
 ];
 
 const container = document.getElementById("plugins");
-container.innerHTML = ""; // vorher leeren
 
 plugins.forEach(p => {
   const div = document.createElement("div");
@@ -147,15 +146,15 @@ plugins.forEach(p => {
   loadReadme(p.id);
 });
 
-async function loadReadme(id) {
-  try {
-    const res = await fetch(`${id}/README.md`);
+function loadReadme(id) {
+  fetch(`${id}/README.md`).then(res => {
     if (!res.ok) throw new Error("No README");
-    const text = await res.text();
+    return res.text();
+  }).then(text => {
     document.getElementById("r-" + id).textContent = text;
-  } catch {
+  }).catch(() => {
     document.getElementById("r-" + id).textContent = "No README available.";
-  }
+  });
 }
 
 function downloadPlugin(id) {
