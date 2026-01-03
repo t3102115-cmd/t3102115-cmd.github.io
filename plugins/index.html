@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Silvans Plugin Hub</title>
-
+<title>Silvan's Plugin Hub</title>
 <style>
 body {
   margin: 0;
@@ -93,24 +92,24 @@ button:hover {
 
 <header>
   <h1>Silvan's Minecraft Plugin Hub</h1>
-  <p>Download plugins for your server made by Silvan.</p>
+  <p>Download plugins for your server. Select the version you need.</p>
 </header>
 
-<div id="plugins"></div>
+<div id="plugins">Loading plugins…</div>
 
 <script>
+// ==== Plugin JSON-Datei laden ====
 async function loadPlugins() {
   const res = await fetch("plugins/plugins.json");
   const plugins = await res.json();
   const container = document.getElementById("plugins");
+  container.innerHTML = ""; // leeren, bevor wir rendern
 
-  for (const p of plugins) {
+  plugins.forEach(p => {
     const div = document.createElement("div");
     div.className = "plugin";
 
-    const options = p.files
-      .map(f => `<option value="${f}">${f}</option>`)
-      .join("");
+    const options = p.files.map(f => `<option value="${f}">${f}</option>`).join("");
 
     div.innerHTML = `
       <h2>${p.name}</h2>
@@ -120,25 +119,31 @@ async function loadPlugins() {
         ${options}
       </select>
 
-      <button onclick="downloadPlugin('${p.id}')">Download</button>
+      <button onclick="downloadPlugin('${p.id}')">⬇ Download</button>
 
       <div class="readme" id="r-${p.id}">Loading README…</div>
     `;
 
     container.appendChild(div);
+
+    // README laden
     loadReadme(p.id);
-  }
+  });
 }
 
+// README-Datei anzeigen, falls vorhanden
 async function loadReadme(id) {
   try {
     const res = await fetch(`plugins/${id}/README.md`);
-    document.getElementById("r-" + id).textContent = await res.text();
+    if (!res.ok) throw new Error("No README");
+    const text = await res.text();
+    document.getElementById("r-" + id).textContent = text;
   } catch {
     document.getElementById("r-" + id).textContent = "No README available.";
   }
 }
 
+// Download-Funktion
 function downloadPlugin(id) {
   const fileName = document.getElementById("v-" + id).value;
   window.location.href = `plugins/${id}/${fileName}`;
