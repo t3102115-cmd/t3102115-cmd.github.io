@@ -1,4 +1,4 @@
-const AUTH = "https://renderauth-0ujh.onrender.com/";
+const AUTH = "https://renderauth-0ujh.onrender.com";
 let sessionToken = null;
 
 async function handshake() {
