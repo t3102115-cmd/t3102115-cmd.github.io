@@ -105,7 +105,7 @@ async function logIp() {
     const geo = await geoRes.json();
 
     const message =
-`Visitor accessed your site!
+` **New Visitor**
 IP: ${ipData.ip}
 Country: ${geo.country || "unknown"}
 Region: ${geo.regionName || "unknown"}
