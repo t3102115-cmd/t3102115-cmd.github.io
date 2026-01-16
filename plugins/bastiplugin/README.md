@@ -1,4 +1,4 @@
-# BastiPlugin
+BastiPlugin
 
 A Paper plugin inspired by BastiGHG’s Minecraft challenges.
 
@@ -6,11 +6,11 @@ Different Challenges in different versions
 
 Ideal for challenge-based and experimental Minecraft Paper servers.
 
- ## Important
+Important
 
 This project includes code created by generative AI.
 
-## Download
+Download
 
 You can download the plugin from:
 
@@ -22,7 +22,7 @@ CurseForge
 
 Hangar (PaperMC)
 
-## Building
+Building
 
 Download and install Maven
 
@@ -41,5 +41,5 @@ Open the target folder
 
 The compiled plugin .jar will be located there
 
-## Helpers
+Helpers
  
