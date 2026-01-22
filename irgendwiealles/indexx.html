@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Minecraft Spielzeiten</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: white;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.card {
+    margin-top: 40px;
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 12px;
+    width: 420px;
+}
+
+.player {
+    background: #1b1b1b;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+button {
+    background: #6cf26c;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:disabled {
+    background: #777;
+    cursor: not-allowed;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Minecraft Spielzeiten für den Irgendwie Alles Server!</h2>
+    <div id="players"></div>
+</div>
+
+<script>
+// NUR DIESE LISTE AENDERN
+// Format: Name TT.MM.JJJJ HH:MM
+const rawList = [
+//    "Steve 22.01.2026 18:30",
+//    "Alex 22.01.2026 19:00"
+];
+
+// Service Worker registrieren
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+
+// Benachrichtigungen erlauben
+if ("Notification" in window) {
+    Notification.requestPermission();
+}
+
+const container = document.getElementById("players");
+
+rawList.forEach(entry => {
+    const [name, date, time] = entry.split(" ");
+    const [d, m, y] = date.split(".");
+    const [h, min] = time.split(":");
+
+    const playTime = new Date(y, m - 1, d, h, min);
+    const notifyTime = playTime.getTime() - 10 * 60 * 1000;
+
+    const div = document.createElement("div");
+    div.className = "player";
+
+    const info = document.createElement("div");
+    info.innerHTML = `<strong>${name}</strong><br><small>${date} ${time}</small>`;
+
+    const btn = document.createElement("button");
+    btn.textContent = "10 Minuten benachrichtigen";
+
+    btn.onclick = async () => {
+        const reg = await navigator.serviceWorker.ready;
+        reg.active.postMessage({
+            name: name,
+            notifyTime: notifyTime
+        });
+        btn.textContent = "Aktiviert";
+        btn.disabled = true;
+    };
+
+    div.appendChild(info);
+    div.appendChild(btn);
+    container.appendChild(div);
+});
+</script>
+
+</body>
+</html>
