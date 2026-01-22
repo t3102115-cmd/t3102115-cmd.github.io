@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Minecraft Spielzeiten</title>
-
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -13,15 +12,13 @@ body {
     justify-content: center;
     min-height: 100vh;
 }
-
 .card {
     margin-top: 40px;
     background: #2c2c2c;
     padding: 20px;
     border-radius: 12px;
-    width: 420px;
+    width: 450px;
 }
-
 .player {
     background: #1b1b1b;
     padding: 12px;
@@ -31,7 +28,9 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-
+.status { font-weight: bold; }
+.ok { color: #6cf26c; }
+.wait { color: #ff6c6c; }
 button {
     background: #6cf26c;
     border: none;
@@ -40,7 +39,6 @@ button {
     cursor: pointer;
     font-weight: bold;
 }
-
 button:disabled {
     background: #777;
     cursor: not-allowed;
@@ -50,15 +48,14 @@ button:disabled {
 <body>
 
 <div class="card">
-    <h2>Minecraft Spielzeiten für den Irgendwie Alles Server!</h2>
+    <h2>Minecraft Spielzeiten</h2>
     <div id="players"></div>
 </div>
 
 <script>
-// NUR DIESE LISTE AENDERN
-// Format: Name TT.MM.JJJJ HH:MM
+// NUR DIESE LISTE ANPASSEN: Name TT.MM.JJJJ HH:MM
 const rawList = [
-//    "Steve 22.01.2026 18:30",
+    "Steve 22.01.2026 18:30",
 //    "Alex 22.01.2026 19:00"
 ];
 
@@ -67,44 +64,87 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
 
-// Benachrichtigungen erlauben
+// Notification Permission
 if ("Notification" in window) {
     Notification.requestPermission();
 }
 
 const container = document.getElementById("players");
 
-rawList.forEach(entry => {
-    const [name, date, time] = entry.split(" ");
-    const [d, m, y] = date.split(".");
-    const [h, min] = time.split(":");
+// Status für Benachrichtigungen: nur wenn Button gedrückt
+const alertsEnabled = new Set();
+const notified10 = new Set();
+const notified1 = new Set();
+const notifiedNow = new Set();
 
-    const playTime = new Date(y, m - 1, d, h, min);
-    const notifyTime = playTime.getTime() - 10 * 60 * 1000;
+function render() {
+    container.innerHTML = "";
+    const now = new Date();
 
-    const div = document.createElement("div");
-    div.className = "player";
+    rawList.forEach(entry => {
+        const [name, date, time] = entry.split(" ");
+        const [d,m,y] = date.split(".");
+        const [h,min] = time.split(":");
+        const playTime = new Date(y,m-1,d,h,min);
+        const diff = playTime - now;
 
-    const info = document.createElement("div");
-    info.innerHTML = `<strong>${name}</strong><br><small>${date} ${time}</small>`;
+        let statusText = "Noch warten";
+        let statusClass = "wait";
+        if (diff <= 0) { statusText = "Jetzt dran"; statusClass = "ok"; }
 
-    const btn = document.createElement("button");
-    btn.textContent = "10 Minuten benachrichtigen";
+        // Benachrichtigungen nur wenn Button aktiviert
+        if (alertsEnabled.has(name)) {
+            if (diff <= 10*60*1000 && !notified10.has(name)) {
+                sendNotification(name, "in 10 Minuten dran");
+                notified10.add(name);
+            }
+            if (diff <= 1*60*1000 && !notified1.has(name)) {
+                sendNotification(name, "in 1 Minute dran");
+                notified1.add(name);
+            }
+            if (diff <= 0 && !notifiedNow.has(name)) {
+                sendNotification(name, "ist jetzt dran");
+                notifiedNow.add(name);
+            }
+        }
 
-    btn.onclick = async () => {
-        const reg = await navigator.serviceWorker.ready;
-        reg.active.postMessage({
-            name: name,
-            notifyTime: notifyTime
-        });
-        btn.textContent = "Aktiviert";
-        btn.disabled = true;
-    };
+        // Player div
+        const div = document.createElement("div");
+        div.className = "player";
 
-    div.appendChild(info);
-    div.appendChild(btn);
-    container.appendChild(div);
-});
+        const info = document.createElement("div");
+        info.innerHTML = `<strong>${name}</strong><br><small>${date} ${time}</small>`;
+
+        const btn = document.createElement("button");
+        btn.textContent = alertsEnabled.has(name) ? "Benachrichtigungen aktiviert" : "10 Minuten benachrichtigen";
+
+        btn.disabled = alertsEnabled.has(name);
+        btn.onclick = () => {
+            alertsEnabled.add(name);
+            btn.textContent = "Benachrichtigungen aktiviert";
+            btn.disabled = true;
+        };
+
+        div.appendChild(info);
+        div.appendChild(btn);
+        container.appendChild(div);
+    });
+}
+
+// Alle 1 Sekunde prüfen
+render();
+setInterval(render, 1000);
+
+// Notification Funktion
+function sendNotification(name, text) {
+    if ("Notification" in window && Notification.permission === "granted") {
+        if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ name, text });
+        } else {
+            new Notification("Minecraft Erinnerung", { body: `${name} ${text}` });
+        }
+    }
+}
 </script>
 
 </body>
