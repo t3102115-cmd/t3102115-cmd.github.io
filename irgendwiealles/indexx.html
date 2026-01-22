@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Minecraft Spielzeiten</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -10,41 +11,52 @@ body {
     color: white;
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: 15px;
+    margin: 0;
 }
 
 .card {
     background: #2c2c2c;
-    padding: 25px;
+    padding: 20px;
     border-radius: 12px;
     width: 600px;
-    max-width: 90%;
+    max-width: 100%;
 }
 
 h2 {
     text-align: center;
+    margin-bottom: 5px;
+}
+
+.server-ip {
+    text-align: center;
+    font-size: 14px;
     margin-bottom: 20px;
+    color: #cccccc;
 }
 
 .player {
     background: #1b1b1b;
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
     margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 16px;
+    flex-wrap: wrap;
 }
 
 .player-info {
     flex-grow: 1;
+    min-width: 150px;
 }
 
 .status {
     font-weight: bold;
     min-width: 120px;
     text-align: right;
+    margin-top: 5px;
 }
 
 .ok { color: #6cf26c; }
@@ -56,13 +68,36 @@ button {
     border: none;
     border-radius: 8px;
     padding: 6px 12px;
-    margin-left: 15px;
+    margin-left: 10px;
     cursor: pointer;
     font-weight: bold;
+    margin-top: 5px;
 }
+
 button:disabled {
     background: #777;
     cursor: not-allowed;
+}
+
+/* Mobile Version */
+@media (max-width: 480px) {
+    .player {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .status {
+        text-align: left;
+        margin-top: 5px;
+        min-width: auto;
+    }
+    button {
+        margin-left: 0;
+        width: 100%;
+    }
+    .player-info {
+        width: 100%;
+        margin-bottom: 5px;
+    }
 }
 </style>
 </head>
@@ -70,15 +105,15 @@ button:disabled {
 
 <div class="card">
     <h2>Minecraft Spielzeiten</h2>
+    <div class="server-ip">Server: play.example-mc.com:25565</div>
     <div id="players"></div>
 </div>
 
 <script>
-// NUR DIESE LISTE ÄNDERN
-// Format: Name TT.MM.JJJJ HH:MM
+// NUR DIESE LISTE ANPASSEN: Name TT.MM.JJJJ HH:MM
 const rawList = [
     "Steve 22.01.2026 18:30",
-    "Alex 22.01.2026 20:51"
+    "Alex 22.01.2026 19:00"
 ];
 
 // Service Worker registrieren
@@ -93,8 +128,8 @@ if ("Notification" in window) {
 
 const container = document.getElementById("players");
 
-// Status für Benachrichtigungen: nur wenn Button gedrückt
-const alertsEnabled = new Set();
+// Alerts nur für aktivierte Spieler
+let alertsEnabled = new Set(JSON.parse(localStorage.getItem("alertsEnabled") || "[]"));
 const notified10 = new Set();
 const notified1 = new Set();
 const notifiedNow = new Set();
@@ -110,9 +145,9 @@ function render() {
         const playTime = new Date(y,m-1,d,h,min);
         const diff = playTime - now;
 
+        // Statusanzeige
         let statusText = "";
         let statusClass = "wait";
-
         if (diff > 0) {
             const minLeft = Math.ceil(diff/60000);
             statusText = `Dran in ${minLeft} min`;
@@ -127,17 +162,14 @@ function render() {
 
         // Benachrichtigungen nur wenn Button aktiviert
         if (alertsEnabled.has(name)) {
-            // 10 min vorher
             if (diff <= 10*60*1000 && diff > 9*60*1000 && !notified10.has(name)) {
                 sendNotification(name, "in 10 Minuten dran");
                 notified10.add(name);
             }
-            // 1 min vorher
             if (diff <= 1*60*1000 && diff > 0 && !notified1.has(name)) {
                 sendNotification(name, "in 1 Minute dran");
                 notified1.add(name);
             }
-            // Jetzt dran
             if (diff <= 0 && diff > -60*1000 && !notifiedNow.has(name)) {
                 sendNotification(name, "ist jetzt dran");
                 notifiedNow.add(name);
@@ -161,6 +193,7 @@ function render() {
         btn.disabled = alertsEnabled.has(name);
         btn.onclick = () => {
             alertsEnabled.add(name);
+            localStorage.setItem("alertsEnabled", JSON.stringify([...alertsEnabled]));
             btn.textContent = "Benachrichtigungen aktiviert";
             btn.disabled = true;
         };
