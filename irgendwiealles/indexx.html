@@ -10,32 +10,53 @@ body {
     color: white;
     display: flex;
     justify-content: center;
-    min-height: 100vh;
-}
-.card {
-    margin-top: 40px;
-    background: #2c2c2c;
     padding: 20px;
-    border-radius: 12px;
-    width: 450px;
 }
+
+.card {
+    background: #2c2c2c;
+    padding: 25px;
+    border-radius: 12px;
+    width: 600px;
+    max-width: 90%;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 .player {
     background: #1b1b1b;
-    padding: 12px;
+    padding: 15px;
     border-radius: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 16px;
 }
-.status { font-weight: bold; }
+
+.player-info {
+    flex-grow: 1;
+}
+
+.status {
+    font-weight: bold;
+    min-width: 120px;
+    text-align: right;
+}
+
 .ok { color: #6cf26c; }
-.wait { color: #ff6c6c; }
+.wait { color: #ffcc00; }
+.past { color: #ff6c6c; }
+
 button {
     background: #6cf26c;
     border: none;
     border-radius: 8px;
-    padding: 6px 10px;
+    padding: 6px 12px;
+    margin-left: 15px;
     cursor: pointer;
     font-weight: bold;
 }
@@ -53,10 +74,11 @@ button:disabled {
 </div>
 
 <script>
-// NUR DIESE LISTE ANPASSEN: Name TT.MM.JJJJ HH:MM
+// NUR DIESE LISTE ÄNDERN
+// Format: Name TT.MM.JJJJ HH:MM
 const rawList = [
     "Steve 22.01.2026 18:30",
-//    "Alex 22.01.2026 19:00"
+    "Alex 22.01.2026 19:00"
 ];
 
 // Service Worker registrieren
@@ -88,21 +110,35 @@ function render() {
         const playTime = new Date(y,m-1,d,h,min);
         const diff = playTime - now;
 
-        let statusText = "Noch warten";
+        let statusText = "";
         let statusClass = "wait";
-        if (diff <= 0) { statusText = "Jetzt dran"; statusClass = "ok"; }
+
+        if (diff > 0) {
+            const minLeft = Math.ceil(diff/60000);
+            statusText = `Dran in ${minLeft} min`;
+            statusClass = "wait";
+        } else if (diff <= 0 && diff > -60*1000) {
+            statusText = "Jetzt dran";
+            statusClass = "ok";
+        } else {
+            statusText = "Vorbei";
+            statusClass = "past";
+        }
 
         // Benachrichtigungen nur wenn Button aktiviert
         if (alertsEnabled.has(name)) {
-            if (diff <= 10*60*1000 && !notified10.has(name)) {
+            // 10 min vorher
+            if (diff <= 10*60*1000 && diff > 9*60*1000 && !notified10.has(name)) {
                 sendNotification(name, "in 10 Minuten dran");
                 notified10.add(name);
             }
-            if (diff <= 1*60*1000 && !notified1.has(name)) {
+            // 1 min vorher
+            if (diff <= 1*60*1000 && diff > 0 && !notified1.has(name)) {
                 sendNotification(name, "in 1 Minute dran");
                 notified1.add(name);
             }
-            if (diff <= 0 && !notifiedNow.has(name)) {
+            // Jetzt dran
+            if (diff <= 0 && diff > -60*1000 && !notifiedNow.has(name)) {
                 sendNotification(name, "ist jetzt dran");
                 notifiedNow.add(name);
             }
@@ -113,11 +149,15 @@ function render() {
         div.className = "player";
 
         const info = document.createElement("div");
+        info.className = "player-info";
         info.innerHTML = `<strong>${name}</strong><br><small>${date} ${time}</small>`;
+
+        const status = document.createElement("div");
+        status.className = `status ${statusClass}`;
+        status.textContent = statusText;
 
         const btn = document.createElement("button");
         btn.textContent = alertsEnabled.has(name) ? "Benachrichtigungen aktiviert" : "10 Minuten benachrichtigen";
-
         btn.disabled = alertsEnabled.has(name);
         btn.onclick = () => {
             alertsEnabled.add(name);
@@ -126,6 +166,7 @@ function render() {
         };
 
         div.appendChild(info);
+        div.appendChild(status);
         div.appendChild(btn);
         container.appendChild(div);
     });
@@ -135,7 +176,6 @@ function render() {
 render();
 setInterval(render, 1000);
 
-// Notification Funktion
 function sendNotification(name, text) {
     if ("Notification" in window && Notification.permission === "granted") {
         if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
