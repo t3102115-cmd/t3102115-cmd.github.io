@@ -64,7 +64,6 @@
             display: inline-block;
         }
 
-        /* Spielerliste */
         .player-list {
             display: flex;
             flex-direction: column;
@@ -136,13 +135,22 @@
             image-rendering: pixelated;
         }
 
-        .skin-loading {
+        .skin-error {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100%;
             height: 100%;
-            color: var(--text-secondary);
+            color: var(--danger);
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .skin-error i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
         }
 
         .player-number {
@@ -278,14 +286,6 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        .control-btn.primary {
-            background: var(--primary);
-        }
-
-        .control-btn.primary:hover {
-            background: var(--primary-dark);
-        }
-
         .server-info {
             background: var(--card-bg);
             padding: 15px;
@@ -303,48 +303,6 @@
             font-size: 1.1rem;
             display: inline-block;
             margin-top: 10px;
-        }
-
-        .info-panel {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .info-panel a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .info-panel a:hover {
-            text-decoration: underline;
-        }
-
-        .config-info {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: var(--border-radius);
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-
-        .config-info h3 {
-            margin-bottom: 10px;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .config-info code {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
         }
 
         .empty-state {
@@ -409,17 +367,24 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .last-update {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-gamepad"></i> Minecraft Spielzeiten</h1>
-            <p>by Silvan </p>
+            <p>by Silvan</p>
         </div>
 
         <div class="server-info">
-            <h3><i class="fas fa-server"></i> Server Informationen</h3>
+            <h3><i class="fas fa-server"></i> Server</h3>
             <div class="server-ip">irgendwiealles.falixsrv.me</div>
         </div>
 
@@ -430,9 +395,6 @@
             <div style="color: var(--text-secondary);">
                 <i class="far fa-clock"></i> <span id="currentTime">--:--:--</span>
             </div>
-            <button class="control-btn primary" id="openConfigBtn">
-                <i class="fas fa-cog"></i> Konfiguration
-            </button>
         </div>
 
         <div class="player-list" id="playerList">
@@ -442,154 +404,199 @@
             </div>
         </div>
 
-        <div class="info-panel">
-            <p><i class="fas fa-info-circle"></i> Spielerdaten werden aus der <code>players.json</code> Datei geladen. 
-            Um Spieler hinzuzufügen oder zu bearbeiten, bearbeite diese Datei im GitHub Repository.</p>
-        </div>
-
-        <div class="config-info">
-            <h3><i class="fas fa-code"></i> Konfigurationsanleitung</h3>
-            <p>Spieler werden über die <code>players.json</code> Datei verwaltet:</p>
-            <ol style="margin-left: 20px; margin-top: 10px; line-height: 1.6;">
-                <li>Öffne die <code>players.json</code> Datei in deinem GitHub Repository</li>
-                <li>Bearbeite die Spielerliste im JSON-Format</li>
-                <li>Jeder Spieler benötigt: <code>name</code>, <code>date</code> (TT.MM.JJJJ), <code>time</code> (HH:MM)</li>
-                <li>Änderungen werden automatisch nach dem nächsten Refresh übernommen</li>
-            </ol>
-            <p style="margin-top: 15px;">
-                <strong>Beispiel:</strong>
-                <br><code>"name": "Steve", "date": "22.01.2026", "time": "18:30"</code>
-            </p>
+        <div class="last-update">
+            <i class="fas fa-info-circle"></i> 
+            <span id="lastUpdateInfo">Letzte Aktualisierung: --:--:--</span>
         </div>
     </div>
 
     <script>
         // ==================== KONFIGURATION ====================
         const CONFIG = {
-            PLAYERS_JSON_URL: './players.json', // Relative URL zur players.json
-            REFRESH_INTERVAL: 30000, // 30 Sekunden
-            MOJANG_API_BASE: 'https://api.mojang.com',
-            SKIN_BASE: 'https://crafatar.com/avatars',
-            CACHE_DURATION: 5 * 60 * 1000 // 5 Minuten
+            PLAYERS_JSON_URL: './players.json',
+            REFRESH_INTERVAL: 30000,
+            SKIN_SIZE: 80,
+            USE_MOJANG_API: true
         };
 
-        // ==================== MOJANG API ====================
-        class MojangAPI {
+        // ==================== MOJANG API SERVICE ====================
+        class MojangService {
             constructor() {
-                this.cache = new Map();
+                this.uuidCache = new Map();
+                this.requestQueue = new Map();
             }
-            
+
             async getUUID(username) {
-                const cacheKey = `uuid_${username}`;
-                const cached = this.cache.get(cacheKey);
-                
-                if (cached && Date.now() - cached.timestamp < CONFIG.CACHE_DURATION) {
-                    return cached.data;
+                if (this.uuidCache.has(username)) {
+                    return this.uuidCache.get(username);
                 }
-                
+
+                if (this.requestQueue.has(username)) {
+                    return this.requestQueue.get(username);
+                }
+
+                const promise = this.fetchUUID(username);
+                this.requestQueue.set(username, promise);
+
                 try {
-                    const response = await fetch(`${CONFIG.MOJANG_API_BASE}/users/profiles/minecraft/${username}`);
-                    if (!response.ok) throw new Error('Spieler nicht gefunden');
-                    
+                    const uuid = await promise;
+                    this.uuidCache.set(username, uuid);
+                    return uuid;
+                } finally {
+                    this.requestQueue.delete(username);
+                }
+            }
+
+            async fetchUUID(username) {
+                try {
+                    const response = await fetch(
+                        `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(username)}`,
+                        { headers: { 'Accept': 'application/json' } }
+                    );
+
+                    if (!response.ok) {
+                        if (response.status === 404) return null;
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
                     const data = await response.json();
-                    this.cache.set(cacheKey, {
-                        data: data.id,
-                        timestamp: Date.now()
-                    });
-                    
-                    return data.id;
+                    return data.id || null;
                 } catch (error) {
-                    console.error(`Fehler beim Abrufen der UUID für ${username}:`, error);
+                    console.error(`Fehler bei UUID für "${username}":`, error);
                     return null;
                 }
             }
-            
-            getSkinUrl(uuid, size = 80) {
-                if (!uuid) return null;
-                return `${CONFIG.SKIN_BASE}/${uuid}?size=${size}&overlay=true`;
+
+            getSkinUrl(uuid, size = CONFIG.SKIN_SIZE) {
+                if (!uuid) {
+                    return `https://crafatar.com/avatars/8667ba71b85a4004af54457a9734eed7?size=${size}&overlay=true`;
+                }
+                
+                return `https://crafatar.com/avatars/${uuid}?size=${size}&overlay=true&default=MHF_Steve`;
             }
-            
+
             clearCache() {
-                this.cache.clear();
+                this.uuidCache.clear();
+            }
+
+            formatUUID(uuid) {
+                if (!uuid) return 'N/A';
+                return uuid.substring(0, 8) + '...';
             }
         }
 
         // ==================== SPIELER MANAGER ====================
         class PlayerManager {
             constructor() {
-                this.mojangAPI = new MojangAPI();
+                this.mojangService = new MojangService();
                 this.players = [];
                 this.lastUpdate = null;
-                this.loading = false;
             }
-            
+
             async loadPlayers() {
-                if (this.loading) return;
-                
-                this.loading = true;
                 try {
-                    const response = await fetch(CONFIG.PLAYERS_JSON_URL + '?t=' + Date.now());
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const timestamp = Date.now();
+                    const response = await fetch(`${CONFIG.PLAYERS_JSON_URL}?t=${timestamp}`);
                     
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
                     const data = await response.json();
-                    this.players = data.players || [];
+                    
+                    if (!data || !Array.isArray(data.players)) {
+                        throw new Error('Ungültiges JSON Format');
+                    }
+
+                    // Spieler nach Datum/Uhrzeit sortieren (nächste zuerst)
+                    this.players = this.sortPlayers(data.players);
                     this.lastUpdate = new Date(data.lastUpdated || Date.now());
                     
-                    console.log(`Geladene Spieler: ${this.players.length}`);
+                    console.log(`${this.players.length} Spieler geladen`);
                     return this.players;
                 } catch (error) {
-                    console.error('Fehler beim Laden der Spielerdaten:', error);
-                    // Fallback zu Beispiel-Daten
-                    this.players = [
-                        { name: "Irgendwas ist schiefgelaufen", date: "beim laden der", time: "spielerdaten!" },
-                        { name: "Something went wrong while", date: "loading the", time: "playerdata!" }
-                    ];
+                    console.error('Fehler beim Laden:', error);
+                    
+                    // Fallback Beispiel-Daten
+                    this.players = this.sortPlayers([
+                        { name: "Steve", date: "25.01.2026", time: "18:30" },
+                        { name: "Alex", date: "23.01.2026", time: "19:00" }
+                    ]);
+                    
+                    this.lastUpdate = new Date();
                     return this.players;
-                } finally {
-                    this.loading = false;
                 }
             }
-            
+
+            sortPlayers(players) {
+                return players.sort((a, b) => {
+                    const timeA = this.parseDateTime(a.date, a.time);
+                    const timeB = this.parseDateTime(b.date, b.time);
+                    return timeA - timeB; // Aufsteigend: früheste zuerst
+                });
+            }
+
+            parseDateTime(dateStr, timeStr) {
+                const [day, month, year] = dateStr.split('.').map(Number);
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return new Date(year, month - 1, day, hours, minutes);
+            }
+
             parsePlayer(player) {
-                const { name, date, time } = player;
-                const [day, month, year] = date.split('.').map(Number);
-                const [hours, minutes] = time.split(':').map(Number);
-                
-                const playTime = new Date(year, month - 1, day, hours, minutes);
-                const now = new Date();
-                const diff = playTime - now;
-                
-                let status = 'waiting';
-                if (diff <= 0 && diff > -5 * 60 * 1000) {
-                    status = 'now';
-                } else if (diff <= -5 * 60 * 1000) {
-                    status = 'past';
+                try {
+                    const { name, date, time } = player;
+                    
+                    if (!name || !date || !time) {
+                        return null;
+                    }
+
+                    const playTime = this.parseDateTime(date, time);
+                    const now = new Date();
+                    const diff = playTime - now;
+
+                    let status = 'waiting';
+                    if (diff <= 0 && diff > -5 * 60 * 1000) {
+                        status = 'now';
+                    } else if (diff <= -5 * 60 * 1000) {
+                        status = 'past';
+                    }
+
+                    return {
+                        name,
+                        date,
+                        time,
+                        playTime,
+                        diff,
+                        status,
+                        isValid: true
+                    };
+                } catch (error) {
+                    console.error('Fehler beim Parsen:', player, error);
+                    return null;
                 }
-                
-                return {
-                    name,
-                    date,
-                    time,
-                    playTime,
-                    diff,
-                    status
-                };
             }
-            
+
             formatTimeDiff(diff) {
                 if (diff < 0) {
                     const minutes = Math.abs(Math.floor(diff / (1000 * 60)));
-                    return `vor ${minutes} min`;
+                    if (minutes < 60) return `vor ${minutes} min`;
+                    const hours = Math.floor(minutes / 60);
+                    return `vor ${hours} h`;
                 }
-                
+
                 const totalMinutes = Math.floor(diff / (1000 * 60));
+                
+                if (totalMinutes < 60) return `in ${totalMinutes} min`;
+                
                 const hours = Math.floor(totalMinutes / 60);
                 const minutes = totalMinutes % 60;
                 
-                if (hours > 0) {
-                    return `in ${hours}h ${minutes}m`;
-                }
-                return `in ${minutes} min`;
+                if (minutes === 0) return `in ${hours} h`;
+                return `in ${hours} h ${minutes} min`;
+            }
+
+            getLastUpdate() {
+                return this.lastUpdate;
             }
         }
 
@@ -599,88 +606,176 @@
                 this.playerManager = playerManager;
                 this.container = document.getElementById('playerList');
                 this.currentTimeElement = document.getElementById('currentTime');
-                this.skinCache = new Map();
+                this.lastUpdateElement = document.getElementById('lastUpdateInfo');
             }
-            
+
             async render() {
                 const players = this.playerManager.players;
                 
-                if (players.length === 0) {
-                    this.container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-users"></i>
-                            <p>Keine Spieler eingetragen</p>
-                            <p style="margin-top: 10px; font-size: 0.9rem;">
-                                Füge Spieler zur <code>players.json</code> Datei hinzu
-                            </p>
-                        </div>
-                    `;
+                if (!players || players.length === 0) {
+                    this.showEmptyState();
                     return;
                 }
-                
-                // Vorbereiten des HTML
+
                 let html = '';
-                
-                // Parallel UUIDs und Skins laden
+                let validPlayers = 0;
+
                 const playerPromises = players.map(async (player, index) => {
                     const playerData = this.playerManager.parsePlayer(player);
-                    const timeDiff = this.playerManager.formatTimeDiff(playerData.diff);
+                    if (!playerData || !playerData.isValid) {
+                        return this.createErrorCard(player, index);
+                    }
+
+                    validPlayers++;
                     
-                    let skinHTML = '<div class="skin-loading"><i class="fas fa-spinner fa-spin"></i></div>';
-                    let uuid = '...';
-                    
-                    // UUID und Skin laden
-                    const uuidValue = await this.playerManager.mojangAPI.getUUID(player.name);
-                    if (uuidValue) {
-                        uuid = this.formatUUID(uuidValue);
-                        const skinUrl = this.playerManager.mojangAPI.getSkinUrl(uuidValue);
-                        if (skinUrl) {
-                            skinHTML = `<img src="${skinUrl}" alt="${player.name} Skin" class="skin-head" loading="lazy">`;
+                    let uuid = null;
+                    let skinUrl = null;
+                    let skinError = false;
+
+                    if (CONFIG.USE_MOJANG_API) {
+                        try {
+                            uuid = await this.playerManager.mojangService.getUUID(player.name);
+                            skinUrl = this.playerManager.mojangService.getSkinUrl(uuid, CONFIG.SKIN_SIZE);
+                        } catch (error) {
+                            console.error(`Skin Fehler für ${player.name}:`, error);
+                            skinError = true;
                         }
                     }
-                    
-                    return `
-                        <div class="player-card ${playerData.status}">
-                            <div class="player-avatar">
-                                <span class="player-number">${index + 1}</span>
-                                <div class="skin-container">
-                                    ${skinHTML}
+
+                    return this.createPlayerCard(playerData, index, uuid, skinUrl, skinError);
+                });
+
+                const playerCards = await Promise.all(playerPromises);
+                
+                if (validPlayers === 0) {
+                    this.showEmptyState();
+                    return;
+                }
+
+                this.container.innerHTML = playerCards.join('');
+                this.addEventListeners();
+                this.updateLastUpdate();
+            }
+
+            createPlayerCard(playerData, index, uuid, skinUrl, skinError) {
+                const timeDiff = this.playerManager.formatTimeDiff(playerData.diff);
+                const formattedUUID = uuid ? this.playerManager.mojangService.formatUUID(uuid) : '...';
+                
+                let skinHTML;
+                if (skinError || !skinUrl) {
+                    skinHTML = `
+                        <div class="skin-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Skin Fehler</span>
+                        </div>
+                    `;
+                } else {
+                    skinHTML = `
+                        <img src="${skinUrl}" 
+                             alt="${playerData.name} Skin" 
+                             class="skin-head"
+                             loading="lazy"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"skin-error\"><i class=\"fas fa-exclamation-triangle\"></i>Skin Fehler</div>'">
+                    `;
+                }
+
+                return `
+                    <div class="player-card ${playerData.status}">
+                        <div class="player-avatar">
+                            <span class="player-number">${index + 1}</span>
+                            <div class="skin-container">
+                                ${skinHTML}
+                            </div>
+                        </div>
+                        <div class="player-info">
+                            <div class="player-header">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="player-name">${playerData.name}</span>
+                                    ${uuid ? `<span class="player-uuid" title="${uuid}">${formattedUUID}</span>` : ''}
+                                </div>
+                                <div class="countdown ${playerData.status}">
+                                    <i class="fas fa-clock"></i>
+                                    ${timeDiff}
                                 </div>
                             </div>
-                            <div class="player-info">
-                                <div class="player-header">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <span class="player-name">${player.name}</span>
-                                        <span class="player-uuid" title="${uuidValue || 'Nicht gefunden'}">${uuid}</span>
-                                    </div>
-                                    <div class="countdown ${playerData.status}">
-                                        <i class="fas fa-clock"></i>
-                                        ${timeDiff}
-                                    </div>
-                                </div>
-                                <div class="time-info">
-                                    <i class="far fa-calendar"></i> ${player.date}
-                                    <i class="far fa-clock"></i> ${player.time}
-                                    <span class="status-badge status-${playerData.status}">
-                                        ${this.getStatusIcon(playerData.status)}
-                                        ${this.getStatusText(playerData.status)}
-                                    </span>
+                            <div class="time-info">
+                                <i class="far fa-calendar"></i> ${playerData.date}
+                                <i class="far fa-clock"></i> ${playerData.time}
+                                <span class="status-badge status-${playerData.status}">
+                                    ${this.getStatusIcon(playerData.status)}
+                                    ${this.getStatusText(playerData.status)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            createErrorCard(player, index) {
+                return `
+                    <div class="player-card" style="opacity: 0.7;">
+                        <div class="player-avatar">
+                            <span class="player-number">${index + 1}</span>
+                            <div class="skin-container">
+                                <div class="skin-error">
+                                    <i class="fas fa-exclamation-circle"></i>
                                 </div>
                             </div>
                         </div>
-                    `;
+                        <div class="player-info">
+                            <div class="player-header">
+                                <span class="player-name" style="color: var(--danger);">
+                                    <i class="fas fa-exclamation-triangle"></i> ${player.name || 'Unbekannt'}
+                                </span>
+                            </div>
+                            <div class="time-info">
+                                <span style="color: var(--danger);">
+                                    Ungültige Daten
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            showEmptyState() {
+                this.container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Keine Spieler eingetragen</p>
+                    </div>
+                `;
+            }
+
+            addEventListeners() {
+                // UUID anzeigen beim Hovern
+                document.querySelectorAll('.player-uuid').forEach(element => {
+                    element.addEventListener('mouseenter', (e) => {
+                        const original = e.target.textContent;
+                        const fullUUID = e.target.getAttribute('title');
+                        if (fullUUID && fullUUID !== original) {
+                            e.target.textContent = fullUUID;
+                        }
+                    });
+                    
+                    element.addEventListener('mouseleave', (e) => {
+                        const fullUUID = e.target.getAttribute('title');
+                        if (fullUUID) {
+                            e.target.textContent = fullUUID.substring(0, 8) + '...';
+                        }
+                    });
                 });
-                
-                // Warten bis alle Skins geladen sind
-                const playerCards = await Promise.all(playerPromises);
-                this.container.innerHTML = playerCards.join('');
             }
-            
-            formatUUID(uuid) {
-                if (!uuid) return 'N/A';
-                return `${uuid.substring(0, 8)}...`;
+
+            updateLastUpdate() {
+                const lastUpdate = this.playerManager.getLastUpdate();
+                if (lastUpdate) {
+                    const timeStr = lastUpdate.toLocaleTimeString('de-DE');
+                    const dateStr = lastUpdate.toLocaleDateString('de-DE');
+                    this.lastUpdateElement.textContent = `Aktualisiert: ${dateStr} ${timeStr}`;
+                }
             }
-            
+
             getStatusIcon(status) {
                 switch(status) {
                     case 'waiting': return '<i class="fas fa-clock"></i>';
@@ -689,7 +784,7 @@
                     default: return '';
                 }
             }
-            
+
             getStatusText(status) {
                 switch(status) {
                     case 'waiting': return 'Wartend';
@@ -698,12 +793,12 @@
                     default: return '';
                 }
             }
-            
+
             updateCurrentTime() {
                 const now = new Date();
                 this.currentTimeElement.textContent = now.toLocaleTimeString('de-DE');
             }
-            
+
             showMessage(text, type = 'info') {
                 const message = document.createElement('div');
                 message.style.cssText = `
@@ -716,11 +811,19 @@
                     border-radius: 8px;
                     z-index: 1000;
                     animation: slideIn 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                 `;
-                message.textContent = text;
+                message.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i> ${text}`;
                 document.body.appendChild(message);
-                
-                setTimeout(() => message.remove(), 3000);
+
+                setTimeout(() => {
+                    message.style.animation = 'slideOut 0.3s ease forwards';
+                    setTimeout(() => message.remove(), 300);
+                }, 2000);
+            }
+
+            clear() {
+                this.container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Lade Spielerdaten...</p></div>';
             }
         }
 
@@ -731,15 +834,14 @@
                 this.uiRenderer = new UIRenderer(this.playerManager);
                 this.init();
             }
-            
+
             init() {
-                // Service Worker registrieren
+                // Service Worker
                 this.registerServiceWorker();
-                
+
                 // Event Listener
                 document.getElementById('refreshBtn').addEventListener('click', () => this.refresh());
-                document.getElementById('openConfigBtn').addEventListener('click', () => this.openConfig());
-                
+
                 // Tastatur-Shortcuts
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
@@ -747,49 +849,44 @@
                         this.refresh();
                     }
                 });
-                
+
                 // Initial laden
                 this.load();
-                
+
                 // Auto-Refresh
-                setInterval(() => this.load(), CONFIG.REFRESH_INTERVAL);
-                
+                setInterval(() => this.refresh(), CONFIG.REFRESH_INTERVAL);
+
                 // Uhrzeit aktualisieren
                 setInterval(() => this.uiRenderer.updateCurrentTime(), 1000);
                 this.uiRenderer.updateCurrentTime();
             }
-            
+
             registerServiceWorker() {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('./sw.js')
-                        .then(reg => console.log('Service Worker registriert:', reg.scope))
-                        .catch(err => console.log('Service Worker Fehler:', err));
+                        .then(reg => console.log('Service Worker registriert'))
+                        .catch(err => console.warn('Service Worker Fehler:', err));
                 }
             }
-            
+
             async load() {
                 try {
+                    this.uiRenderer.clear();
                     await this.playerManager.loadPlayers();
                     await this.uiRenderer.render();
                 } catch (error) {
                     console.error('Fehler beim Laden:', error);
-                    this.uiRenderer.showMessage('Fehler beim Laden der Spielerdaten', 'error');
                 }
             }
-            
+
             async refresh() {
-                this.playerManager.mojangAPI.clearCache();
-                await this.load();
-                this.uiRenderer.showMessage('Spielerdaten aktualisiert');
-            }
-            
-            openConfig() {
-                // Link zur players.json Datei auf GitHub öffnen
-                const currentUrl = window.location.href;
-                const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
-                const configUrl = `${baseUrl}/players.json`;
-                
-                window.open(configUrl, '_blank');
+                try {
+                    await this.playerManager.loadPlayers();
+                    await this.uiRenderer.render();
+                    this.uiRenderer.showMessage('Aktualisiert');
+                } catch (error) {
+                    console.error('Fehler beim Aktualisieren:', error);
+                }
             }
         }
 
@@ -807,12 +904,23 @@
                     opacity: 1;
                 }
             }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
         `;
         document.head.appendChild(style);
 
         // App starten
         document.addEventListener('DOMContentLoaded', () => {
-            new App();
+            window.app = new App();
         });
     </script>
 </body>
