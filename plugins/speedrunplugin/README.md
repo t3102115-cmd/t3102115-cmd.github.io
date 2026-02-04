@@ -2,8 +2,6 @@ speedrunplugin
 A Minecraft Server paper plugin that allows players to create worlds to speedrun the game
 Syntax: "/speedrun" to create a new speedrun world and start the timer
 
-IMPORTANT: !!! THE PLUGIN CONTAINS AI GENERATED CODE !!!
-
 How to Download?
 1. Go to here: https://github.com/t3102115-cmd/speedrunplugin/releases/
 2. Download the newest version
