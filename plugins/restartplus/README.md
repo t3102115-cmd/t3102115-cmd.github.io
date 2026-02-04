@@ -1,7 +1,7 @@
 RestartPlus
 A Paper plugin that allows admins to restart and stop the server with a reason and delay 
 
-The restart and stop message will be modifiable in 1.1 
+The restart and stop message will be modifiable in 1.2
 
 '/restartplus {time} {reason}' to restart the server in {time} seconds for the reason {reason} 
 
@@ -16,9 +16,6 @@ Permissions:
 "restartplus.use": use the "/restartplus" and the "/cancelrestart" command 
 
 "stopplus.use":  use the "/stopplus" and the "/cancelstop" command
-
-[!IMPORTANT]
-This project includes code created by generative AI
 
 Download
 - Github Releases
