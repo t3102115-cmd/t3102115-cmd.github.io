@@ -6,10 +6,6 @@ Different Challenges in different versions
 
 Ideal for challenge-based and experimental Minecraft Paper servers.
 
-Important
-
-This project includes code created by generative AI.
-
 Download
 
 You can download the plugin from:
