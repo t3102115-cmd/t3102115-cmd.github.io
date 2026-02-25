@@ -36,23 +36,27 @@ function closeModal() {
 }
 
 // Formular an Discord senden
+// Ersetze den Event-Listener am Ende deines Scripts durch diesen hier:
+
 document.getElementById('order-form').addEventListener('submit', function(e) {
     e.preventDefault();
 
     const packageName = document.getElementById('package-input').value;
     const robloxName = document.getElementById('roblox-name').value;
+    const email = document.getElementById('email').value; // Neu auslesen
     const time = document.getElementById('time').value;
 
     const discordData = {
         embeds: [{
             title: "Neue Bestellung!",
-            color: 65280, // Grün
+            color: 65280, // Ein schönes Grün
             fields: [
                 { name: "Paket", value: packageName, inline: true },
                 { name: "Roblox Name", value: robloxName, inline: true },
-                { name: "Zeitpunkt", value: time }
+                { name: "E-Mail", value: email, inline: false }, // Neu hinzugefügt
+                { name: "Zeitpunkt", value: time, inline: false }
             ],
-            footer: { text: "Shop System" },
+            footer: { text: "Bestellsystem aktiv" },
             timestamp: new Date()
         }]
     };
@@ -62,13 +66,17 @@ document.getElementById('order-form').addEventListener('submit', function(e) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(discordData)
     })
-    .then(() => {
-        alert("Anfrage gesendet! Wir melden uns.");
-        closeModal();
-        document.getElementById('order-form').reset();
+    .then(response => {
+        if (response.ok) {
+            alert("Anfrage erfolgreich gesendet! Wir haben auch deine E-Mail erhalten.");
+            closeModal();
+            document.getElementById('order-form').reset();
+        } else {
+            throw new Error("Discord Fehler");
+        }
     })
     .catch(err => {
-        alert("Fehler beim Senden. Prüfe die Konsole.");
+        alert("Fehler beim Senden. Prüfe deine Webhook-URL im Code.");
         console.error(err);
     });
 });
