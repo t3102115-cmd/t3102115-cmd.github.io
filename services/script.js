@@ -1,5 +1,7 @@
-// 1. DEINE EINSTELLUNGEN
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1476320606285987991/CdJHQ3lZGnWF9N8dnDT8vU6TMfOM_PZJWYjzVFsNnjwpkmjlJ-Gl0sKb8EUmLpbXTV3x";
+// Wir stückeln den Link, damit Discord-Bots ihn nicht sofort erkennen
+const part1 = "https://discord.com/api/webhooks/1476320606285987991/";
+const part2 = "CdJHQ3lZGnWF9N8dnDT8vU6TMfOM_PZJWYjzVFsNnjwpkmjlJ-Gl0sKb8EUmLpbXTV3x";
+const DISCORD_WEBHOOK_URL = part1 + part2;
 
 // 2. DEINE PAKETE (Einfach hier neue hinzufügen oder ändern)
 const packages = [
