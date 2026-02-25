@@ -1,11 +1,11 @@
 // 1. DEINE EINSTELLUNGEN
-const DISCORD_WEBHOOK_URL = "DEIN_DISCORD_WEBHOOK_LINK_HIER";
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1476320606285987991/CdJHQ3lZGnWF9N8dnDT8vU6TMfOM_PZJWYjzVFsNnjwpkmjlJ-Gl0sKb8EUmLpbXTV3x";
 
 // 2. DEINE PAKETE (Einfach hier neue hinzufügen oder ändern)
 const packages = [
-    { id: 1, name: "Starter Paket", price: "500 Robux", desc: "Grundlegender Service" },
-    { id: 2, name: "Pro Paket", price: "1500 Robux", desc: "Besserer Service & Support" },
-    { id: 3, name: "Premium Paket", price: "5000 Robux", desc: "Der ultimative Service" },
+    { id: 1, name: "Refund Service", price: "10 Robux", desc: "Wenn dich jemand scammt bekommst du dein Ding zurück!" },
+    { id: 2, name: "Jedes Ding in jedem Game spawnen!", price: "100 Robux", desc: "Spawn alles!" },
+    { id: 3, name: "Free Gamepasses", price: "50 Robux", desc: "Alle Gamepasses in einem Spiel Gratis!" },
     // { id: 4, name: "Neues Paket", price: "100 Robux", desc: "Beschreibung" }, <-- Beispiel für ein neues Paket
 ];
 
@@ -45,7 +45,7 @@ document.getElementById('order-form').addEventListener('submit', function(e) {
 
     const discordData = {
         embeds: [{
-            title: "🛒 Neue Bestellung!",
+            title: "Neue Bestellung!",
             color: 65280, // Grün
             fields: [
                 { name: "Paket", value: packageName, inline: true },
