@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Shop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Mein Service Shop</h1>
+        <p>Wähle ein Paket aus, um zu starten.</p>
+    </header>
+
+    <div id="package-container" class="container"></div>
+
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Bestellung für <span id="selected-package-name"></span></h2>
+            
+            <form id="order-form">
+                <input type="hidden" id="package-input">
+                
+                <label for="roblox-name">Roblox Name:</label>
+                <input type="text" id="roblox-name" placeholder="z.B. Builderman" required>
+
+                <label for="time">Wann hast du Zeit zum Bezahlen?</label>
+                <input type="text" id="time" placeholder="z.B. Heute 18:00 Uhr" required>
+
+                <button type="submit" id="submit-btn">Kaufanfrage senden</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
