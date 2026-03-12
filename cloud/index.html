@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de" style="height:100%; overflow:hidden;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilvanCloud</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        #pi-frame {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            border: none; outline: none; display: block; overflow: hidden;
+            opacity: 0; transition: opacity 0.3s ease; z-index: 1;
+        }
+
+        #offline-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+            color: white; text-align: center;
+        }
+
+        .cloud-logo { width: 80px; height: 80px; fill: #38bdf8; margin-bottom: 20px; }
+        h1 { font-size: 2rem; margin-bottom: 10px; color: #f8fafc; }
+        
+        .status-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .pulse-dot { display: inline-block; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        
+        button { margin-top: 20px; padding: 10px 25px; background: #38bdf8; border: none; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        button:active { transform: scale(0.95); }
+        
+        #retry-info { margin-top: 15px; font-size: 0.9rem; color: #94a3b8; }
+        #loader { border: 4px solid rgba(255,255,255,0.1); border-left-color: #38bdf8; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body style="margin:0; padding:0; overflow:hidden; height:100%;">
+
+    <div id="offline-overlay">
+        <div id="loader"></div>
+        <svg class="cloud-logo" viewBox="0 0 24 24"><path d="M17.5,19c-3.037,0-5.5-2.463-5.5-5.5c0-0.07,0.002-0.139,0.006-0.208C10.662,12.518,9.391,12,8,12c-2.209,0-4,1.791-4,4c0,2.209,1.791,4,4,4h9.5c1.381,0,2.5-1.119,2.5-2.5S18.881,15,17.5,15c-0.101,0-0.2,0.006-0.298,0.017C16.923,13.266,15.367,12,13.5,12c-0.123,0-0.244,0.006-0.364,0.018C12.44,10.279,10.87,9,9,9c-2.209,0-4,1.791-4,4c0,0.115,0.005,0.229,0.014,0.342C3.212,14.12,2,15.666,2,17.5C2,19.985,4.015,22,6.5,22h11c2.485,0,4.5-2.015,4.5-4.5S19.985,13,17.5,13V19z"/><text x="7" y="18" fill="white" font-size="5" font-weight="bold">SC</text></svg>
+        <h1>SilvanCloud</h1>
+        <div class="status-box">
+            <span class="pulse-dot"></span> Server offline
+            <p id="last-seen" style="margin-top:5px; font-size:0.8rem; opacity:0.6;"></p>
+        </div>
+        <button onclick="checkConnection()">Jetzt erneut versuchen</button>
+        <p id="retry-info">Automatischer Check in <span id="timer">30</span>s...</p>
+    </div>
+
+    <iframe id="pi-frame" src="" frameborder="0" scrolling="auto" allowfullscreen></iframe>
+
+    <script>
+        const PI_URL = "https://cloud.silvan.qzz.io"; 
+        const frame = document.getElementById('pi-frame');
+        const overlay = document.getElementById('offline-overlay');
+        const timerText = document.getElementById('timer');
+        const lastSeenText = document.getElementById('last-seen');
+        let countdown = 30;
+
+        async function checkConnection() {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
+                
+                await fetch(PI_URL, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+                
+                clearTimeout(timeoutId);
+                if (frame.src !== PI_URL + "/") frame.src = PI_URL;
+                overlay.style.display = 'none';
+                frame.style.opacity = '1';
+                localStorage.setItem('sc_last_online', new Date().toLocaleString());
+            } catch (e) {
+                overlay.style.display = 'flex';
+                frame.style.opacity = '0';
+                lastSeenText.innerText = "Zuletzt online: " + (localStorage.getItem('sc_last_online') || "Nie");
+            }
+        }
+
+        setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                countdown = 30;
+                checkConnection();
+            }
+            timerText.innerText = countdown;
+        }, 1000);
+
+        checkConnection();
+    </script>
+</body>
+</html>
